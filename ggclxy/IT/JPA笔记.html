@@ -1,0 +1,47 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p>当初学习JPA，试了两回，随手扔下。说起JPA毕竟是标准，走标准路线时还需要捡起来。</p>
+<ul>
+	<li>环境<br>spring + toplink + derby</li>
+	<li>
+		时间类型<br>
+		@Temporal(TemporalType.TIMESTAMP)<br>
+		private Date updateTime; <br>
+		需要制定Temporal。Date，Time，Timestamp
+	</li>
+	<li>不能使用关键字<br>where sum	</li>
+	<li>
+		异常 <strong>Object is not a known entity type</strong><br>
+		参考<a rel="nofollow" href="http://forum.springframework.org/showthread.php?t=48514">这里</a><br>
+		※我就搞不懂这些框架搞些什么飞机？！
+	</li>
+</ul>

@@ -1,0 +1,50 @@
+  今天炉石传说在更新后，发现无法登陆除国服外的其他服务器。折腾了下终于搞定，写在这里希望能帮助到遇到同样问题的玩家。
+
+  原因很简单，应该是battle.net.config的相关处理发生了变化。
+
+旧修改方式
+[code="js"]
+{
+    "Client":
+    {
+        "Language": "zhCN",
+        "LoginSettings":
+        {
+            "AllowedRegions": "CN;KR",
+            "AllowedLocales": "zhCN"
+        },
+...
+[/code]
+其中的AllowedRegions，需要添加其他服务器ID，我添加了亚洲服务器的KR。还有美服的US和欧服的EU也可以添加进去。
+(KR代表亚洲，不是韩国人是喜还是怒呢？！)
+
+这次更新过后，比较该config文件，会发现最下面多了个配置
+[code="js"]
+    "123abc456def":
+    {
+        "Client":
+        {
+            "Language": "zhCN",
+            "LoginSettings":
+            {
+            "AllowedRegions": "CN;KR",
+            "AllowedLocales": "zhCN"
+            }
+        },
+        "Services":
+        {
+            "LastLoginRegion": "CN",
+            "LastLoginAddress": "cn.actual.battle.net"
+        }
+    }
+[/code]
+
+上面的“123abc456def”是一串疑似base64的编码，想来各人应该不同。
+
+[color=blue][b]关键是这里的AllowedRegions也需要添加服务器ID，比如我也添加了亚洲服务器的KR。[/b][/color]
+
+再启动battle.net的登陆器就应该OK了。
+
+注意：battle.net登陆器每次退出时会重新覆盖该config文件，所以确保做上述修改前关闭登陆器。
+
+Good Luck。

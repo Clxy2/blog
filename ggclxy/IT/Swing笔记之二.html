@@ -1,0 +1,110 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p>
+	<a rel="nofollow" href="http://clxy-actor.spaces.live.com/Blog/cns!B77EB0A6E217E0BB!210.entry">上篇</a>跑题太远，与其说是Swing笔记，不如说是jdesktop笔记。这篇尽量保证能扣题些，哈哈。说来Swing在易用性上还是不够好。即便不是“最肥”的Client，也是相当的“胖”。
+</p>
+<p class="strong">◇JComboBox</p>
+<p> 从自己的经验来讲，往下拉框里面扔对象List的情形应该是比较多的。试下来，发现麻烦竟如此之多。</p>
+<ul>
+	<li>只读：问题不大，只需要照顾好你的对象的toString和eqauls方法。但是如果toString有其他用途，那恐怕就要写Renderer。</li>
+	<li>可编辑：“正常”的办法是写Editor。
+		<ul>
+			<li>如果你需要很复杂的Editor，恐怕另做画面才是正确的选择。</li>
+			<li>即便只一个文本框就可以的时候，还是不能用默认的Editor。只能用JTextField写自己的实现。代码如下： </li>
+		</ul>
+	</li>
+</ul>
+
+<blockquote>
+<span style="color: blue">public</span> <span style="color: blue">class</span> Editor <span style="color: blue">implements</span> ComboBoxEditor {<br />
+    <span style="color: blue">private</span> JTextField text;<br />
+    <span style="color: blue">private</span> JTextField text;<br />
+    <span style="color: blue">public</span> Editor() {<br />
+        text = <span style="color: blue">new</span> JTextField();<br />
+        text.setBorder(BorderFactory.createEmptyBorder());<br />
+    }<br />
+    <span style="color: blue">public</span> Component getEditorComponent() {<br />
+        <span style="color: blue">return</span> text;<br />
+    }<br />
+    <span style="color: blue">public</span> void setItem(<span style="color: blue">Object</span> anObject) {<br />
+        text.setText(toString(anObject));<br />
+    }<br />
+    <span style="color: blue">public</span> <span style="color: blue">Object</span> getItem() {<br />
+        <span style="color: blue">String</span> text = text.getText();<br />
+        <span style="color: blue">return</span> toObject(text);<br />
+    }<br />
+    <span style="color: blue">public</span> void selectAll() {<br />
+        text.selectAll();<br />
+    }<br />
+    <span style="color: blue">public</span> void addActionListener(ActionListener l) {<br />
+        text.addActionListener(l);<br />
+    }<br />
+    <span style="color: blue">public</span> void removeActionListener(ActionListener l) {<br />
+        text.removeActionListener(l);<br />
+    }<br />
+}
+</blockquote>
+<br />
+<p>还有个比较简单却相当dirty的做法是Override掉actionPerformed和setSelectedItem这2个方法。emn…相当dirty.</p>
+<br />
+
+<p class="strong">◇JTable</p>
+<p>用JTable的话，自己写Model肯定不如用jdesktop.beansbinding来得方便。可这样一来，在使用上就会有这样那样的诸多不便。</p>
+<ul>
+	<li>换行文本的处理。<br>需要设置CellEditor为JTextArea，需要花相当大的力气。网上搜下就能明白多少人在被同一件事困扰。
+	</li>
+	<li>更新前后重新绑定。<br>
+	如下，如果不unbind的话，会抛异常。当然还有做法就是每次重新生成列表和tableBinding的绑定。但个人认为那比较不合理。
+	<blockquote>
+		List result = memoService.search(condition);<br />
+		tableBinding.unbind();<br />
+		mylist.clear();<br />
+		mylist.addAll(result);<br />
+		tableBinding.bind();
+	</blockquote>
+	</li>
+	<li>ColumnBinding。<br>
+	- TableColumn的好多属性都需要另行处理。比如不提供editor，renderer,width等。<br>
+	- 在重新绑定后，不能保留当前信息，如列宽。
+	</li>
+	<li>默认渲染器 Default Renderer<br>
+	似乎有缓存机制（或者BUG），即1列共用1个实例。现象是设置某个行的背景时，使用默认渲染器的整个列都跟着变。解决办法就是用自己的渲染器。<br>
+	顺便说下行单位的设置，比如奇偶行异色。最简单的办法就是覆盖JTable#prepareRenderer这个方法。<br>
+	虽然比较让人不爽，但是其他方法要困难得多！
+	</li>
+	<li>UI<br>
+	- 用多线程更新UI时会抛异常…必须是EDT。<a rel="nofollow" href="http://java.sun.com/docs/books/tutorial/uiswing/concurrency/">参考Sun的资料</a>。特别在执行org.jdesktop.application.Task时，需要特别注意。（有时候需要先remove掉Listener，Task结束后再add回去。）
+	</li>
+</ul>
+<br/>
+<p style="color:#800000">总之，（好快的‘总之’）用Swing来做Application，有很多需要处理的地方。如果UI要求很高，恐怕得考虑购买第三方UI库了！</p>

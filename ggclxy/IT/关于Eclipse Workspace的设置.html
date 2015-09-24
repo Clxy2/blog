@@ -1,0 +1,23 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+<p>最近有需求，要将个超大的Eclipse Workspace分成多个。如果只是Copy走Eclipse的话，就会遇到个问题，那些自定义的设置都统统消失了。</p>
+
+<p>网上大概搜索了下，有两个办法：
+<ol>
+	<li>使用Eclipse自带的功能。File > Export > General > Preferences导出旧的。然后再File > Import > General > Preferences导入新的。
+	<li>直接Copy目录{旧workspace}\.metadata\.plugins\org.eclipse.core.runtime\.settings下所有文件去{新workspace}的同名目录里。
+</ol>
+</p>
+
+<p>两种都尝试了下，第一种不好用！好多设置没能导过来。</p>
+<p>推荐第二种方法。直接了当！</p>

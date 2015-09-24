@@ -1,0 +1,154 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	font-size: large;
+}
+
+.red {
+	color: red;
+}
+
+.blue {
+	color: blue;
+}
+</style>
+<p>这篇是在玩Spring-MyBatis时遇到的问题，比较闹心，还算有趣，记下经历，以备他日不时之需。</p>
+<p>问题是这样：想做个共通的机制来处理大量重复的“基本的增删改查”</span>。</p>
+<p>网上做了些调查，通常都是需要准备一个Class，在里面用反射来拼SQL文，然后再调用MyBatis的底层Class的SqlRunner来执行。这种方案本身倒也没什么问题，但是MyBatis现在是纯Interface的风格。所以会导致MyBatis的Dao/Mapper既有Interface又有Class同时存在。于是事情变得麻烦些。</p>
+<p>最初打算简单些，只写一个类，不再搞接口什么的。代码如下：</p>
+<pre name="code" class="java">
+public class CommonDao extends SqlSessionDaoSupport {
+
+	public int insert(Object object) {
+		...
+	}
+	...
+}
+</pre>
+<p>由于使用了Spring-MyBatis的自动配置——所有Dao/Mapper的Interface会被自动注册，于是首当其冲的问题就是该类无法自动注册。这时有两个选择，一是手动注册，二是加Interface。</p>
+<p>手动注册最简单，于是先尝试了这个方案。添加的配置如下：</p>
+<pre name="code" class="java">
+	&lt;bean id="commonDao" class="mypackage.common.dao.CommonDao"&gt;
+		&lt;property name="sqlSessionFactory" ref="sqlSessionFactory" /&gt;
+	&lt;/bean&gt;
+</pre>
+<p>启动时直接抛了异常，如下</p>
+<pre name="code" class="java">org.springframework.beans.factory.BeanNotOfRequiredTypeException: Bean named 'commonDao' must be of type [mypackage.common.dao.CommonDao], but was actually of type [com.sun.proxy.$Proxy22]</pre>
+<p>一通折腾后找到了原因。由于我对所有Dao都有加了拦截器，又没有提供CGLIB，于是Spring自顾自的上了JDK的代理。可是我不明白的是，Spring你明知道那玩意儿不好用，还折腾个啥。</p>
+<p>加上CGLIB包，并强制Spring使用它，配置如下。</p>
+<pre name="code" class="xml">
+	&lt;aop:aspectj-autoproxy proxy-target-class="true"&gt;
+		&lt;aop:include name="daoInterceptor" /&gt;
+	&lt;/aop:aspectj-autoproxy&gt;
+</pre>
+<p>启动时仍然报错，这回是其他的Dao/Mapper类。报错如下：</p>
+<pre name="code" class="java"> java.lang.IllegalArgumentException: Cannot subclass final class class com.sun.proxy.$Proxy20</pre>
+<p>查下来，似乎问题出在MyBatis上。MyBatis里面写死固定使用JDK代理，导致CGLIB再企图继承JDK代理时抛的异常。参考MyBatis 3.2.2代码如下</p>
+<pre name="code" class="java">
+package org.apache.ibatis.binding;
+	...
+public class MapperProxyFactory<T> {
+
+	...
+
+  @SuppressWarnings("unchecked")
+  protected T newInstance(MapperProxy<T> mapperProxy) {
+    return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
+  }
+
+  public T newInstance(SqlSession sqlSession) {
+    final MapperProxy<T> mapperProxy = new MapperProxy<T>(sqlSession, mapperInterface, methodCache);
+    return newInstance(mapperProxy);
+  }
+}
+</pre>
+<p>网上搜索了下，找到这个<a href="https://code.google.com/p/mybatis/issues/detail?id=811">Issue</a>，已经被关闭，且回答是“MyBatis使用CGLIB”！啥？是我哪里理解错了吗？！</p>
+<p>到这里，虽然咱又是加CGLIB，又是改配置，还是死胡同一条啊！</p>
+<p>于是改走Interface路线。顺便改了名字CommonDao -> UtilDao。代码如下：</p>
+<pre name="code" class="java">
+// 接口
+public interface UtilDao {
+	...
+	public int insert(Object object);
+	..
+}
+
+// 实现类
+public class UtilDaoImpl extends SqlSessionDaoSupport implements UtilDao {
+	...
+	public int insert(Object object) {
+		...
+	}
+	...
+}
+</pre>
+<p>CGLIB也暂时去掉，手动注册和aop:aspectj的proxy-target-class也去掉。</p>
+<p>再启动，这回不报错了。耶～！试着执行下，直接抛了异常。！艹！（我TYYD是在拯救世界还是什么？！不就写个共通，至于吗？！）异常如下：</p>
+<pre name="code" class="java">
+org.apache.ibatis.binding.BindingException: Invalid bound statement (not found): mypackage.common.dao.UtilDao.insert</pre>
+<p>查下来，是被Spring-MyBatis注册在前，看来前面的手动注册还得加上去才行。配置如下：</p>
+<pre name="code" class="xml">
+	&lt;bean id="utilDao" class="mypackage.common.dao.db.UtilDaoImpl"&gt;
+		&lt;property name="sqlSessionFactory" ref="sqlSessionFactory" /&gt;
+	&lt;/bean&gt;
+</pre>
+<p>这样就彻底OK了。基于MyBatis的Dao/Mapper，以Interface和class的混合方式一同工作。</p>
+<p class="strong">结论是即需要加Interface又需要手动注册。</p>
+<p>累稀忒了...</p>
+<br>
+<br>
+<p>以下内容已经属于完善加强的部分，开始偏离主题了。哈。</p>
+<hr>
+<p>还没完，查看启动时日志，注意下面这句有些碍眼。</p>
+<pre name="code" class="java">
+2013-06-16 16:11:38,744 WARN  ClassPathMapperScanner - Skipping MapperFactoryBean with name 'utilDao' and 'mypackage.common.dao.UtilDao' mapperInterface. Bean already defined with the same name! checkCandidate
+</pre>
+<p>这个应该是Spring在调用MyBatis的注册时，发现已经有相同的bean时发出的警告。对这种细节稍稍比较在意，于是开始琢磨怎么完善它。</p>
+<p>简单说就是屏蔽掉MyBatis的注册。调查后发现Spring-MyBatis提供的MapperScannerConfigurer不提供excludeFilters！可是Spring类似的东东都是有excludeFilters和includeFilters的，您这只有个支持通配符——还不是正则表达式——的basePackage哪里够用啊？！于是自己基于MapperScannerConfigurer做个自己的DaoScanner，最终配置如下：</p>
+<pre name="code" class="xml">
+	&lt;bean class="mypackage.common.dao.DaoScanner"&gt;
+		&lt;property name="basePackage" value="mypackage.*.dao" /&gt;
+		&lt;property name="excludeFilters"&gt;
+			&lt;list&gt;
+				&lt;value&gt;&lt;![CDATA[.*(?&lt;!Dao)$]]&gt;&lt;/value&gt;
+				&lt;value&gt;&lt;![CDATA[.*UtilDao$]]&gt;&lt;/value&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean id="utilDao" class="mypackage.common.dao.db.UtilDaoImpl"&gt;
+		&lt;property name="sqlSessionFactory" ref="sqlSessionFactory" /&gt;
+	&lt;/bean&gt;
+</pre>
+<p>关于MapperScannerConfigurer的excludeFilters，我有去mybatis-user提过建议，得到的回答是“有些过度设计”！唔......也罢。</p>

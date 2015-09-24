@@ -1,0 +1,68 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+<p>每次到用的时候都要折腾一遍。这次索性放在这里，方便下次使用。</p>
+<p>Data Type那里还比较粗糙，也罢，有时间再说吧。</p>
+<p>&nbsp;</p>
+<blockquote>
+	<p>select</p>
+	<p>&nbsp; col.table_name,</p>
+	<p>&nbsp; col.column_name,</p>
+	<p>&nbsp; case</p>
+	<p>&nbsp;&nbsp;&nbsp; when pk.column_name is null then null</p>
+	<p>&nbsp;&nbsp;&nbsp; else '◎'</p>
+	<p>&nbsp; end as pk,</p>
+	<p>&nbsp; data_type ||'('</p>
+	<p>&nbsp;&nbsp;&nbsp; || decode(data_type, 'number', data_precision, data_length)</p>
+	<p>&nbsp;&nbsp;&nbsp; || decode(data_scale, null, '', 0, '', ', ' || data_scale)</p>
+	<p>&nbsp;&nbsp;&nbsp; ||')' as "type",</p>
+	<p>&nbsp; case nullable</p>
+	<p>&nbsp;&nbsp;&nbsp; when 'n' then 'not null'</p>
+	<p>&nbsp;&nbsp;&nbsp; else ''</p>
+	<p>&nbsp; end as "null",</p>
+	<p>&nbsp; comments</p>
+	<p>from</p>
+	<p>&nbsp; user_tab_columns col</p>
+	<p>inner join</p>
+	<p>&nbsp; user_col_comments com</p>
+	<p>on</p>
+	<p>&nbsp; col.table_name&nbsp;&nbsp; = com.table_name</p>
+	<p>and</p>
+	<p>&nbsp; col.column_name = com.column_name</p>
+	<p>left join (</p>
+	<p>&nbsp; select</p>
+	<p>&nbsp;&nbsp;&nbsp; cols.table_name,</p>
+	<p>&nbsp;&nbsp;&nbsp; cols.column_name</p>
+	<p>&nbsp; from</p>
+	<p>&nbsp;&nbsp;&nbsp; user_cons_columns cols,</p>
+	<p>&nbsp;&nbsp;&nbsp; user_constraints cons</p>
+	<p>&nbsp; where</p>
+	<p>&nbsp;&nbsp;&nbsp; cons.constraint_type = 'p'</p>
+	<p>&nbsp;&nbsp;&nbsp; and cons.constraint_name&nbsp;&nbsp; = cols.constraint_name</p>
+	<p>&nbsp; ) pk</p>
+	<p>on</p>
+	<p>&nbsp; col.table_name&nbsp;&nbsp; = pk.table_name</p>
+	<p>and</p>
+	<p>&nbsp; col.column_name = pk.column_name</p>
+	<p>where</p>
+	<p>-- table_name = ''</p>
+	<p>order by</p>
+	<p>&nbsp; table_name,</p>
+	<p>&nbsp; column_id;</p>
+</blockquote>
+<p>&nbsp;</p>

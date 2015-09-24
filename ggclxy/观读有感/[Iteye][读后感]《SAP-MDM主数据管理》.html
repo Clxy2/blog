@@ -1,0 +1,71 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+ITeye博客同步
+<hr>
+<p>对SAP的感觉是复杂的。曾有位同事就职过SAP称那些奢华亮丽都是在给公司挣面子；曾有位从SAP离职友人讲：“嗨，也就那样！”；曾经占有企业应用软件市场份额的三分之一；曾有个参与企划的项目被SAP（竞标中）夺去..</p>
+
+<p>其中最好奇的，莫过于那个项目是怎么被SAP抢去的？！传说中当年的情形是这样的：“我方还在跟客户比划那些需要定制开发的内容，其最终的形态<span class='strong'>将</span>会是这样那样的时候，SAP的工程师已经通过对系统的一些调整实现了大部分定制功能！”...所以，是的，很好奇！
+</p>
+
+<p>带着这个“怨念”，试读了这本《SAP MDM 主数据管理》。</p>
+
+<p>前面的序和前言主要是介绍SAP的历史和现状。第一章也主要在讲主数据的概念——“主数据”基本上就是master表。是的！这本书主要内容是在讲“主表（master table，为区分简写master表，下同。）的维护”！实话讲，看到这多少有点不耐烦的说——合着您都折腾本书出来了，不过就是在讲“master表维护”？！自己经历，“master表维护”不过是其中相当基础的部分，没有多少‘花头’。</p>
+
+<p>这章的内容基本上也是给那些头头脑脑们看的：总之主数据很重要，有价值，需要管理之类。</p>
+
+<p>第二章的安装没能搞定。迅速的浏览过官网，SCN老是连接中断（这也能被墙不成？！），最终也没找到可下载的试用版。看着书中的内容也不过是点两下和下一步的难度。So...没有也罢。</p>
+
+<p>第三章总算有内容了。罗列出主数据资源库所有主要类型的表。从主表（Main 	Table）到各种支撑扩展的副表。基础上还都是（只能是）关系型数据库的那些主从表，外键，制约等等，只是分的可真够细的！比如:
+<ul>
+	<li>大数据。所有大数据都和主表分离存储。细分成图像，音频，视频，文本，HTML，PDF和二进制对象表等。其实，除了文本和HTML以为的都可以归程二进制的，SAP细分至此，（元芳你怎么看？），这其中必有些预制的特殊处理。</li>
+	<li>其他副表。主表中的列表字段用“平面表”维护，如有层次时用“层次结构表”，动态属性用“分类系统表”，简单业务逻辑判断用“限定平面表”，另外还有一大票的关系，屏蔽，指定搜索等涵盖了些许常用业务逻辑的表。</li>
+</ul>
+从中基本上能搞清SAP的思路——<span class="strong" style="text-decoration: underline;">关系型数据库结构 + 通用的扩展 + 常用的业务逻辑</span>，以实现<span class="strong">迅速</span>，<span class="strong">灵活</span>对应不同业务。仅仅“master表”分类就做了如此多的‘扩展’，唔...是得写本书了，哈。这么读下来，大概能明白当年那个项目怎么丢的了。</p>
+
+<p>剩下的章节没有试读，只能从目录管窥之。看来单单个“master表维护”就已经做成有着完整个功能，对外开放各种服务API独立的系统，包括具体的使用，管理，实施及部署。对其中的“安全管理”和“MDM项目实施方法及经验”比较感兴趣，希望有机会能研究学习。</p>
+
+<p>最后，请允许咱吐下槽<span style="color: gray;">（这才是写读后感最大的乐趣，最主要的目的，对不对！）。 </p>
+<blockquote>“对于‘含糖量’这个属性可能只需要存在于‘低糖碳酸饮料’这个类别中，而对于‘啤酒’这个类别则不需要。”<br> 一看就知道，作者是无法体会——喝啤酒的胖子的——心情的！
+</blockquote>
+<br>
+<blockquote>数据库选择里没有MySQL和PostgreSQL，喂？喂！<br>SAP：穷酸！用免费DB的来凑什么热闹？！
+</blockquote>
+<br>
+<blockquote>近六百页的试读图书只有百页不到，还包括了前面那大段大段的序，前言和目录...小气的试读，有莫有？！</blockquote>
+<p>以上</p>

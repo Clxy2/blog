@@ -1,0 +1,73 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p>
+	前面的<a rel="nofollow" href="http://clxy-actor.spaces.live.com/Blog/cns!B77EB0A6E217E0BB!210.entry">之一</a>及<a
+		rel="nofollow" href="http://clxy-actor.spaces.live.com/Blog/cns!B77EB0A6E217E0BB!264.entry">之二</a>都是些注意点之类的，在这篇里面真正概括总结一下，防止以后自己看到也会不知所云，^O^.
+</p>
+<p class="first">Swing是个面向桌面的GUI框架。所以主要就是摆弄些组件（Component）。</p>
+<p>组件主要有2大类。容器（Container）和控件（Controls）。</p>
+<ul>
+	<li>容器就是可以放置其他组件的东东啦比如JPanel，JScrollPane，JSplitPane等等。容器里面一个比较重要的内容就是布局（Layout）。比起早期Windows程序来，Layout也曾算是个亮点。</li>
+	<li>控件就是常用的标签（JLabel），按钮（JButton），文本框（JTextField）等等。要说特别的地方就是编辑器（Editor）和渲染器（Renderer），比如JComboBox，JTable等等。
+	</li>
+	<li>当然还有其他的菜单（JMenu）和菜单项（JMenuItem），以及颜色选择器，文件选择器，对话框等等。</li>
+</ul>
+<p style="font-size: small">
+	☆注意到控件名字前面都有个“J”了吧，为了和AWT区分开。（不知道别人如何，我是一看见这个J，就气不打一处来！这就好比家里弄脏了，不把垃圾清理出去，只是另划拉出个干净些的地方将就着，我靠！忒难受！个人喜好，勿怪！）<br>&nbsp;
+	☆还有一点就是因为Java的跨平台，所以Swing是所有平台的最小交集。比如某特性是Windows特有的，那么Swing就不可能有。比如系统托盘（System
+	tray）。（←本段已经过时！请参考最新的文档。）
+</p>
+<br>
+
+<p class="first">组件的动作是靠事件监听器（Action Listener）来实现的。这些监听器主要来自AWT包。</p>
+<p style="font-size: small">（瞧！垃圾堆找出些能用凑合！同样个人喜好，请无视）</p>
+<p>如果你用jdesktop的话，可以减少些监听器的使用，用@Action这个Annotation来搞定（推荐）。还可以使得代码简洁，并且像在前面笔记里写的那样，也很容易实现异步。</p>
+<br>
+
+<p class="first">除了jdesktop.application这个包以外，jdesktop.beansbinding也比较有用。它主要用来绑定数据源和组件的。可以省却了很多赋值给组件显示，和从组件收集数据的代码，同样能使得代码简洁（万岁！）。且提供验证（Validation）。但是还有很多不方便的地方，参考笔记之二。</p>
+<p style="font-size: small">
+	☆jdesktop是Sun在<a rel="nofollow" href="http://java.net/">Java.net</a>上的项目，被netbeans集成了进去。<br>&nbsp;☆也因为是Sun的，所以Eclipse上支持得并不是很好。我是指GUI方面。
+</p>
+<br>
+
+<p class="first">
+	最后，谈谈Netbeans，用Netbeans进行Swing的GUI编辑真的不错！完全可以媲美MS的VS系列（个人感觉，做不得准）！而Eclipse的SWT编辑器（免费的版本）就要差个档次了，至于Eclipse上的Swing编辑器，我反正没找到好用的（免费版本）。<br>&nbsp;
+	（我目前的解决办法是，同一个项目即使用Netbeans也用Eclipse，用Netbeans处理Swing的GUI，用Eclipse处理纯代码部分。不是办法的办法！）
+</p>
+<p>OK，这样看上去稍稍像个总结了，哈。</p>

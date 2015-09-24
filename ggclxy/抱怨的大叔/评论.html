@@ -1,0 +1,37 @@
+语言本身如何受个人喜好影响太大，且不说它。
+这个“官方文档”也太坑叔了吧？！
+The object should be careful about vending references to self—the protocol checker converts a return value of self to indicate the checker rather than the object for any messages forwarded by the checker,...
+（故意找这句，哈！）
+加个标点会死吗？！断个句会死吗？！你瞄个竟是些贼长贼长的句子，在练吐纳吗？！
+老实说！四级过了没？！我这个四级水平咋就觉得闹心呢？！
+（是不是该改叫愤怒的大叔？！）
+
+
+应的方法，在开始
+应的方法，{作用是}在开始
+追加个（作用是）会好理解些？
+
+
+这句反了
+
+When an object is vended, all of its methods become available to other processes. This may not be desired when vending an object with many methods, only a few of which ought to be remotely accessible. 
+
+当一个对象被vended后，它的所有方法对于其他的进程来说都是可见的。{一下子}vend个有着许多方法的对象，这可能是您所不期待的，应该是只有一部分方法允许远程访问。
+
+
+这句，
+The object should be careful about vending references to self—the protocol checker converts a return value of self to indicate the checker rather than the object for any messages forwarded by the checker, but direct references to the object (bypassing the checker) could be passed around by other objects.
+
+我看上下文觉得这么翻，好些
+对象应该注意{不要}vend自身的引用—protocol checker会转换自身的返回值，意味着应该由checker而不是对象来处理由checker转发的任何消息，但是对该对象的直接引用(绕过checker)可能导致其他对象调用{没有vend的方法}。
+
+名服务器->名称服务器
+
+同样，您无法通过使用NSSocketPort对象作为终点的通道，来传递一个带有NSMessagePort实例的消息给另外一个进程;
+同样，在用NSSocketPort对象作为终点的通道上，无法传递带有NSMessagePort实例的消息给另外一个进程;
+
+不需要分配和初始化一个实例
+不要直接去分配和初始化一个实例
+
+客户端只需要知道名服务器主机名
+客户端只需要知道运行Port名服务的主机名

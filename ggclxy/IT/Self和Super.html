@@ -1,0 +1,105 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p style="text-indent: 10px;">学习Objective-C（简称OC）时，知道了在OC里，Self和Super表现不一样。具体为：</p>
+
+<ul>
+	<li>Self永远是自己。</li>
+	<li>Super不一定是父类。比如可能是父类的父类。</li>
+</ul>
+
+<p style="text-indent: 10px;">原以为Java和OC不一样，可是我错了。Java也是一样！</p>
+<p style="text-indent: 10px;">代码如下：</p>
+<blockquote>
+public class A {<br/>
+<br/>
+　public void super1() {<br/>
+　　print("A.super1");<br/>
+　}<br/>
+<br/>
+　public void super2() {<br/>
+　　print("A.super2");<br/>
+　}<br/>
+<br/>
+　public void super3() {<br/>
+　　print("A.super3");<br/>
+　}<br/>
+<br/>
+　protected final void print(String method) {<br/>
+　　System.out.println(method);<br/>
+　}<br/>
+}<br/>
+<br/>
+public class B extends A {<br/>
+<br/>
+　@Override<br/>
+　public void super1() {<br/>
+　　print("B.super1");<br/>
+　}<br/>
+<br/>
+　@Override<br/>
+　public void super3() {<br/>
+　　print("B.super3");<br/>
+　　super.super1();<br/>
+　　super.super2();<br/>
+　}<br/>
+}<br/>
+<br/>
+public class C extends B {<br/>
+<br/>
+　@Override<br/>
+　public void super2() {<br/>
+　　print("C.super2");<br/>
+　}<br/>
+}<br/>
+<br/>
+public class Main {<br/>
+<br/>
+　public static void main(String[] args) {<br/>
+<br/>
+　　C c = new C();<br/>
+　　c.super3();<br/>
+　}<br/>
+}<br/>
+<br/>
+</blockquote>
+
+<p style="text-indent: 10px;">当调用C的super3方法时，得到下面的结果。</p>
+
+<pre>
+B.super3
+A.super1
+A.super2
+</pre>
+
+<p style="text-indent: 10px;">
+	是<font color="red">A.super1</font>！而不是<font color="gray">B.super1</font>！
+</p>

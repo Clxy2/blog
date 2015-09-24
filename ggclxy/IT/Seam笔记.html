@@ -1,0 +1,64 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p>当年学习Seam的笔记，现在过时已久。Seam中好多内容已经被搬入Java，成了实实在在的标准。现在谈标准应该是：</p>
+<blockquote>JSF+CDI(Seam的Weld)+JPA(EJB)</blockquote>
+<div style="text-align: center; width: 100%;" class="strong">--------- 以下是旧文 ---------</div>
+<p>最近在学习Seam，把一些有趣的东西记录下来。</p>
+<p>说起来，大概2年前就曾经追捧过Seam。当时看中的是JSF+JPA(EJB)，在Java世界里规范虽不是很重要，但规范毕竟是规范。所以如果走“标准”路线，JSF+(Seam)+JPA(EJB)这个组合应该也不错才对。久隔时日，又把它捡起来，感觉有点说不清道不明的怪。哈哈。</p>
+<p>回到正题：（以下内基于Seam:<b>2.1.1.GA，</b>JDK:1.6.0_13，Tomcat:6.0.18 的环境）</p>
+<ul>
+	<li>疯狂的jar<br>单单一个seam-jpa（Tomcat）例子，WEB-INF/lib下面有<font color="#ff0000"><strong>29</strong></font>个jar文件。</li>
+	<li>
+		seam.properties<br> 
+		在从头构建自己的Seam应用时，一直会抛<br>
+		 javax.el.PropertyNotFoundException: Target Unreachable<br>
+		这个异常，想来是Component没能注册上。试来试去，竟然是缺少seam.properites这个文件！于是Copy个空白文件过来，一切都好了！比较让人恼火…
+	</li>
+	<li>components.xml<br> 可以将第三方的类配置成组件<br>
+		<blockquote>
+			&lt;component name="<span style="color: #8b0000;">userService</span>" auto-create="<span
+				style="color: #8b0000;">true</span>" <span style="color: #0000ff;">class</span>="<span
+				style="color: #8b0000;">foo.bar.UserServiceJPAImpl</span>"&gt;<br /> &lt;<span
+				style="color: #0000ff;">property</span> name="<span style="color: #8b0000;">entityManager</span>"&gt;#{em}&lt;/
+			<span style="color: #0000ff;">property</span>&gt;<br /> &lt;/component&gt;<br />
+		</blockquote>
+		但是有个问题：这样配置的EnityManager不能找到第三方库里的Entity。<br>
+		<strike><font color="#808080">找到个解决办法：在orm.xml中再配置一遍，哈哈。ugly but work！TYYD！</font></strike><br>
+		 →上面不是正确的方法。根据JPA规范，在persistence-unit的jar-file节点中指定才是正路。<br>
+		又：这种做法大概很少人用，网上相关资料不是很多；加上Seam中用的旧Hibernate；加上Hibernate（3.4.0）在这个规范的实现上又有<a rel="nofollow"
+		href="http://opensource.atlassian.com/projects/hibernate/browse/EJB-374">Bug</a>；于是这般种种，如此个小问题竟使得我历尽磨难，TYYD！
+	</li>
+	<li>接下来是Transaction问题。<br />
+		如何管理事务，我觉得最方便的是Annotation了。问题出在Seam有@Transactional，Spring也有自己的@Transactional。如果想把自己的业务逻辑单独打包，不依赖Seam，Spring或任何框架，怎么办？自己再来一套？！emn！自己再来一套！Another ugly but work！ <br /> （依稀记得JPA的新规范里有Transactional这个Annotation来着…） <br />
+	</li>
+</ul>
+<br />

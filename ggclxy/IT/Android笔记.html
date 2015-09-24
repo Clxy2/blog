@@ -1,0 +1,50 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+
+<ol>
+	<li>个人认为代码还有些不够成熟。比如说android.widget.TextView</li>
+	<li>Java世界里大家都是各自发明一套“轮子”。Android也是如此。
+		<ul>
+			<li>譬如图形方面。AWT，Swing，SWT的那些东西可以都扔一边了。从头来过。</li>
+			<li>譬如log。</li>
+		</ul>
+	</li>
+	<li>小窍门（来自<a href="http://developer.android.com/" rel="nofollow">官方网站</a>）
+		<ol>
+			<li>访问局部变量比类变量高效。所以有下面的代码： <br />
+			<pre>
+	Cursor c = mNotesCursor;//定义局部变量，避免下面的代码中再次访问类变量。<br />
+	c.moveToPosition(position);<br />
+	c.xxx();<br />
+	...
+			</pre>
+			</li>
+		</ol>
+	</li>
+</ol>
+<br />
+
+<p>（09年摸了摸，一直搁置至今11.10......）</p>

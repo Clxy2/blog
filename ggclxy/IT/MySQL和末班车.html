@@ -1,0 +1,84 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+<p>上周末好惨！不但自己惨，害得其他人跟我一起煎熬…</p>
+<p>本来很简单的问题：前3列中的最大值减去后2列的最小值，再乘以10。</p>
+<p>DB是MySQL 5.1，最初的实现是这样：</p>
+<p>(greatest(列1, 列2, 列3) – least(列4, 列5) ) * 10</p>
+<p>哈！多简单！然而他喵的兄弟是历尽磨难，昏天黑地…最终的结果是不但没解决，且错过了末班车，差点没能回去家。</p>
+<p>原因之一是数据！比如前3列的数值可能是这样的。</p>
+<table border="1" cellspacing="0" cellpadding="2" width="400" align="center">
+	<thead>	
+		<tr>
+			<th valign="top" width="133" align="center">No.</th>
+			<th valign="top" width="133" align="center">第1列</th>
+			<th valign="top" width="133" align="center">第2列</th>
+			<th valign="top" width="133" align="center">第3列</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr align="center">
+			<td valign="top" width="133">
+				<strong><font color="blue">1</font></strong>
+			</td>
+			<td valign="top" width="133">
+				<strong><font color="#008000">20</font></strong>
+			</td>
+			<td valign="top" width="133">null</td>
+			<td valign="top" width="133">null</td>
+		</tr>
+		<tr align="center">
+			<td valign="top" width="133">
+				<strong><font color="blue">2</font></strong>
+			</td>
+			<td valign="top" width="133">0</td>
+			<td valign="top" width="133">
+				<strong><font color="#008000">30</font></strong>
+			</td>
+			<td valign="top" width="133">null</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>◆按最初的实现，这两条数据的greatest(列1, 列2, 列3)的结果分别是，null和null。</p>
+<p>这他喵的是不行的。期待的结果是20和30。也就是说0和null都要忽略掉的。</p>
+<p>一直听负责人说数据很烂，但是总要有个限度吧？！我了去的！</p>
+<p>◆原因之二是MySQL！</p>
+<p>greatest（和least）函数在5.0.13后改成，如果参数中有null就返回null，而之前的版本都是忽略Null的！理由是这个函数的出处是oracle，而oracle是这么个实现，所以要统一。</p>
+<p>我了去的。他傻你也跟着傻吗？现在oracle收购了sun，他们倒是更有理由这么做了，哈？！<a href="http://bugs.mysql.com/bug.php?id=15610">参考这里</a></p>
+<p>这个周末在家，花了些时间调查，直接把结果写在下面：</p>
+<blockquote>
+	greatest(<br/>
+		COALESCE(列1, 列2, 列3),<br/>
+		COALESCE(列2	, 列3, 列1),<br/>
+		COALESCE(列3, 列1, 列2))<br/>
+	 -<br/>
+	least(<br/>
+		COALESCE(列4, 列5),<br/>
+		COALESCE(列5, 列4)<br/>
+	) *	10<br/>
+	from (<br/>
+		子查询,<br/>
+		case when 列1 > 0 then 列1 else null end 列1,<br/>
+		…<br/>
+		case when 列5 > 0 then 列5 else null end 列5<br/>
+	)<br/>
+</blockquote>
+<p>如何？“赏心悦目”吧？！S-Walking！</p>
+<p>主席说，加班是痛苦的！白加班是最痛苦的！</p>
+<p>饿着肚子白（好像有$来着？）加班不但痛苦，且不能解决问题，这个恐怕已经超出主席的上限了…</p>

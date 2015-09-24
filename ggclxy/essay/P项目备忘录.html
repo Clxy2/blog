@@ -1,0 +1,104 @@
+	<style type="text/css">
+	p {
+		text-indent: 10px;
+	}
+	
+	hr {
+		height: 1px;
+		border: none;
+		border-top: 1px dashed green;
+	}
+	
+	blockquote {
+		border: 1px solid #dedbde;
+		border-radius: 3px;
+		padding: 10px;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+	
+	pre {
+		border: 1px solid #dedbde;
+		border-radius: 3px;
+		padding: 10px;
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+	
+	.strong {
+		font-style: inherit;
+		font-weight: bold;
+		color: red;
+	}
+	</style>
+	
+	<p>年初做了快三个月的小项目，毕竟有日子没干活了，手生了许多。趁还有些记忆时，写出来做个备忘。</p>
+	<p>项目本身业务不去谈，只谈技术方面等。</p>
+	
+	<p class="strong">◆ 框架</p>
+	<hr/>
+	<p>初次接触的SNS领域，所以选择SAStruts+Seasar这个组合，一是用过比较放心，还可以有些参照。再就是Seasar是必须的。</p>
+	<p>不过SAStruts有个问题，它默认是按Struts的Action分，而我们习惯上都是按模块分包。加上它的代码里好多写得比较死，为了改成能够按模块分包，着实费了些力气。
+	不过也可以理解，毕竟Struts的Action就是一层平铺的。</p>
+	<br>
+	
+	<p class="strong">◆ Web前台</p>
+	<hr/>
+	<p>这次算是玩了回“响应式布局”，主要使用了JQuery加上大量的Plugin。数量上已经快接近Jar包了，哈！实现响应效果的JS是<a href="http://masonry.desandro.com/">Masonry</a>，还有一些CSS配合。不过貌似有个小Bug，它会重复发Request。<br>
+	至于HTML和CSS则是对方提供的，纯流用了。</p>
+	<p>顺便提个JQuery的小Tip，从某个对象移去事件处理时有两种方式，unbind和removeAttr。它们的区别在于，<br>
+	 ■ unbind只处理用JS动态bind的，而不去处理HTML源代码已有的。<br>
+	 ■ removeAttr则相反，不去处理动态bind的。<br>
+	 所以，比如去除click事件最安全的写法是
+	<pre>$(obj).removeAttr("onclick").unbind("click");</pre>
+	</p>
+	<br>
+	
+	<p class="strong">◆ 地图，SNS和它们的API</p>
+	<hr/>
+	<p>我觉得地图和SNS其实是一回事：地图告诉你在哪个地理位置；SNS告诉你在哪个社会位置。</p>
+	<p>还学到了一个道理：如何保持不败？分享！越多的使用者意味着越多的支持者。</p>
+	<p>○ SNS方面，个人感觉Facebook明显优于Twitter（2012年3月）。<br>
+	■ Facebook的Javascript库提供必要功能外，还提供必要的token，可以直接供Server端使用。Twitter则遮遮掩掩，很是不够爽快。<br>
+	■ Facebook的API很RESTFul，很容易使用。Twitter的则需要折腾哟！这次使用了<a href="http://twitter4j.org/">Twitter4J</a>(需翻墙)，代码结构不是很中意，所幸功能齐备。</p>
+	
+	<p>○ Google地图的API则强大无比。不过还是有几个小问题没能完全解决：
+	<ul>
+		<li>在某个临近的地点需要添加N个Marker。Google会把这些个Marker叠加在一起，无法区分。想到的几个解决方法：
+			<ul>
+				<li>最简单是用Marker的Title提示重叠。同时设置Marker可移动，然后就让用户自己去拖拽。</li>
+				<li>使用RichMarker库。只是这个东东在Firefox上不好用。</li>
+			</ul>
+			但是都不够理想。
+		</li>
+		<li>Geocoder在返回数据中formatted_address的格式，不同Locale不一样，相当混乱。只对应会用到的：
+			<ul>
+				<li>用空白或逗号分割。</li>
+				<li>国名在首或尾。</li>
+			</ul>
+			也不知道有没有其他格式的了～="=!
+		</li>
+	</ul>
+	</p>
+	<br>
+
+	<p class="strong">◆ 全文检索</p>
+	<hr/>
+	<p>以前的项目里没有关心过全文检索。也是因为没有过全文检索的需求，所以全是Like搞定。哈！</p>
+	<p>接触下来，竟如此麻烦，实在让人惊讶！个人的感觉，做了相当大的牺牲——复杂度，架构，可维护性等，换来的却是限制多多的简单功能。
+	再加上中文日文这类词词相连——而不像英文那样以空格格开——的语言，还需要再加上一层处理！坑爹啊！</p>
+	<br>
+	
+	<p class="strong">◆ 测试</p>
+	<hr/>
+	<p>简单使用了下Selenium，感觉这个东东距上次尝试没啥进步啊。不过也是能理解的（我竟然好宽容啊！），毕竟这种花哨的画面很难定位。</p>
+	<br>
+	
+	<p class="strong">◆ 灵异事件</p>
+	<hr/>
+	<p>还遇到个灵异事件，Eclipse上调试Tomcat时，会在刷新某页面时莫名丢失用户认证信息。</p>
+	<p>Session里放了4种数据，单单只用户认证后的信息会丢失。跟踪到最后，发现是Tomcat内部把那个信息从Session中删除掉。
+	没时间找Tomcat的源码，一顿折腾后，找到了解决办法：将Session的存储Key从user改成{Xyz}User，Done！</p>
+	<p>猜测是由于user成了Tomcat的敏感字，更怀疑是Tomcat的Bug。Eclipse Indigo SR1 + Tomcat 7.0.23</p>
+	<br>
+	
+	<hr/>
+	<p>看看这个项目，再想想5年前，还在口沫横飞的说服用户，支持个IE6就够了云云.......哈！哈哈！</p>

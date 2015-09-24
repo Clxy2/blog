@@ -1,0 +1,39 @@
+XCode 4 用了段时间。关于Debug的一些基本的东西记下来。
+
+◆ Debug界面和那些主流IDE的基本一样，如下图：
+<img src="http://ggclxy.files.wordpress.com/2011/07/xcode-debug.jpg" alt="" title="Xcode Debug" width="570" height="380" class="aligncenter size-full wp-image-113" />
+<ol>
+	<li>线程列表。现在停在断点所在线程。</li>
+	<li>代码窗口。停在断点处。</li>
+	<li>监视窗口。当前的主要的能访问的变量。可以追加表达式。
+	 - A：Auto自动，L：Local局部变量，E：Expression表达式。
+	 - 貌似property的表达式: class.property无法使用！
+	 - 调用有返回值的方法时需要造型。eg. (int)[myArray retainCount]
+	 - （比起这个监视窗口，也许NSLog更好用些。）
+	 - 参考<a href="http://www.streamingcolour.com/blog/tutorials/using-the-expressions-window/">这里</a>
+	</li>
+	<li>Console窗口。</li>
+</ol>
+
+
+◆ 当异常发生时，XCode默认把线程停在异常发生的代码处。这时候主要看上面的“2”和“4”俩处来判断异常。
+<ul>
+	<li>sigabrt异常。比较多的异常吧。
+	大多数时候会在Console窗口（4）显示Exception内容。系统默认的或程序员自定义的。
+	</li>
+	<li>另外一种exc_bad_access异常，在Console窗口没有任何提示，只是线程停在那里。初学时很让人恼火。如下图。
+	<img src="http://ggclxy.files.wordpress.com/2011/07/xcode-debug-bad-access.jpg" alt="" title="Xcode Debug Bad Access" width="570" height="380" class="aligncenter size-full wp-image-115" />
+	这个异常主要是指针访问时报错，比如访问已经被释放的对象，etc..
+	在上图左边的线程列表里，能看到异常发生在NSXMLParser dealloc调用上。
+	在代码窗口，线程指在调用上述方法的地方。
+	这个例子里，XMLParser错误的实例化导致了上述异常。
+	</li>
+</ul>
+
+
+◆ 利用宏控制NSLog。我很惊讶Objective C一直没有NSDebug存在。
+网上最多的例子是用宏来控制：定义个在DEBUG模式（变量控制）下的NSLog，在非DEBUG模式下则什么也不做。
+参考<a href="http://stackoverflow.com/questions/969130/nslog-tips-and-tricks">这里</a>
+
+
+(to be continued...)

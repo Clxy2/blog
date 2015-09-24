@@ -1,0 +1,105 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+
+<p>最近对Java Web Application开发框架的想法有了些改变，开始对JavaScript的模板引擎有点感兴趣。</p>
+
+<p>我个人对模板引擎的要求，不外乎以下的几点</p>
+
+<ul>
+  <li> 要简单。<font color="yellow">&lt;-废话，哈。</font></li>
+  <li> 模板效果可视。 方便设计人员及开发人员检视设计效果。</li>
+  <li> 数据绑定。比如JSON数据 &lt;==&gt; HTML的双向绑定。</li>
+  <li> 当然还有那些效率啊，解析速度啊，灵活啊之类的。<font color="yellow">&lt;-同样废话。</font></li>
+</ul>
+
+<p>网上搜索了下，结果如下：</p>
+
+<ul>
+	<li>
+		<strong><font color="blue" size="3">
+			<a href="http://beebole.com/pure/">Pure</a>
+		</font></strong>
+		<p>
+			可以绑定几个流行的JS库。jQuery，Prototype等<br>
+			<font color="yellow">(我个人倾向这个。)</font>
+		</p>
+		<p>自定义标签：否。用JavaScript声明循环，分歧等动作。</p>
+		<p>模板效果可视：是。</p>
+	</li>
+	<li>
+		<strong><font color="blue" size="3">
+			<a href="http://jtemplates.tpython.com/">jTemplates</a>
+		</font></strong>
+		<p>依赖于jQuery</p>
+		<p>自定义标签：是。{#<i>表达式</i>}</p>
+		<p>模板效果可视：否。</p>
+	</li>
+	<li>
+		<strong><font color="blue" size="3">
+			<a href="http://www.prototypejs.org/api/template">prototype官方</a>
+		</font></strong>
+		<p>依赖于prototype</p>
+		<p>自定义标签：是。可自己修改是最大亮点。</p>
+		<p>模板效果可视：是。</p>
+		<p>没看到关于循环，分歧方面的文档。可能只有数据绑定。</p>
+	</li>
+	<li>
+		<strong><font color="blue" size="3">
+			<a href="https://github.com/snakajima/SNBinder">SNBinder</a>
+		</font></strong>
+		<p>依赖于jQuery</p>
+		<p>自定义标签：是。$(.name)!</p>
+		<p>模板效果可视：是。</p>
+		<p>没看到关于循环，分歧方面的文档。可能只有数据绑定。</p>
+	</li>
+	<li>
+		<strong><font color="gray" size="3">
+			<a href="http://api.jquery.com/category/plugins/templates/">jQuery官方plugin</a>
+		</font></strong>
+		<p>
+			<font color="red">已中止，变成了JsRender（主要是模板处理。）和JsViews（主要是数据绑定。）</font>，
+			具体经过参考<a href="http://www.borismoore.com/2011/10/jquery-templates-and-jsviews-roadmap.html">这里(英文)</a><br>
+			<font color="yellow">(折腾！整个就是个折腾！)</font>
+		</p>
+		<p>自定义标签：{{<i>表达式</i>}}</p>
+		<p>模板效果可视：否。用script标签定义模板导致浏览器不可视。</p>
+	</li>
+	<li>
+		<strong><font color="gray" size="3">
+			HTML::Template的JavaScript实现。
+		</font></strong>
+		<p>有几个实现。不过个人不是很喜欢HTML::Template的标签，略过。</p>
+		<p>自定义标签：HTML::Template的规范</p>
+		<p>模板效果可视：部分。被HTML::Template标签阻碍。</p>
+	</li>
+	<li>
+		<strong><font color="gray" size="3">还有几个已经停止更新的，一并列出来。</font></strong>
+		<ol>
+			<li><a href="http://code.google.com/p/htmltemplatejs/source/list">htmltemplatejs</a></li>
+			<li><a href="http://code.google.com/p/embeddedjavascript/">EJS：embeddedjavascript</a></li>
+		</ol>
+	</li>
+</ul>

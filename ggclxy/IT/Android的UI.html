@@ -1,0 +1,31 @@
+需求：
+	底部有个toolbar，几个按钮均匀分布。
+	不同按钮切换不同页面。
+
+ActionBar及Tab
+
+	Intellij IDEA自动生成的Tabbed Activity中，有大量deprecated的方法，看上去很是不爽。
+
+	搜索的结果，替代的方案是ActionBar + ViewPager。但是这个东西太难处理了，也许是我没找对方法？！
+	- ActionBar上的内容居中均匀分布。没有简单的办法只能替换掉布局，将自己的内容加上去。
+	- ActionBar在页面底部，有个android:uiOptions="splitActionBarWhenNarrow"。但似乎没有Tab的话，就不起作用。
+	- 那个Tab的动作怎么看怎么别扭。最多同时三个Tab按钮显示。
+
+结论就是ActionBar不能用，只好自己实现。
+
+Button
+	- 圆角
+	系统没有，还是的自己实现。
+	http://www.albertopasca.it/whiletrue/2014/04/android-button-with-rounded-corners/
+
+	- 零间隔
+	设置左右margin合计-8dp左右才行！
+	
+	- 带图标按钮
+	只能自己组合Button及ImageView，我去~！
+
+Toggle Button
+	- 要自己处理group的问题。
+
+
+

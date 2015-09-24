@@ -1,0 +1,126 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+
+<p>软件开发做得有年头了，大多数都是Java的Web开发，前前后后使用过，学习过一些框架。</p>
+<p>这里仅仅做个笔记，把一些想法记录下来，以备用时查询。</p>
+<p>持续更新中.......</p>
+
+<h5>参考</h5>
+<ul>
+	<li><a href="http://en.wikipedia.org/wiki/Comparison_of_web_application_frameworks#Java">框架比较@维基百科</a></li>
+	<li><a href="http://raibledesigns.com/rd/entry/my_comparing_jvm_web_frameworks">另一篇2010年的</a></li>
+	<li>Push=Request，Pull=Component</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://struts.apache.org/">Apache Struts 1</a>
+</h4>
+<ul>
+	<li>Push/Pull：Push</li>
+	<li>难易：相对简单</li>
+	<li>准确描述Struts1的词将会是，“永垂不朽”。十多年前从它开始学习，昨天还在用。是的，昨天！</li>
+	<li>其他：模板用Tiles</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://click.apache.org/">Apache Click</a>
+</h4>
+<ul>
+	<li>Push/Pull：Pull</li>
+	<li>难易：相对简单</li>
+	<li>恶：组件需要用Java代码生成。</li>
+	<li>其他：模板也是需要类继承。</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://wicket.apache.org/">Apache Wicket</a>
+</h4>
+<ul>
+	<li>Push/Pull：Pull</li>
+	<li>难易：相对复杂</li>
+	<li>恶：自由的虽然高，但是过于复杂。</li>
+	<li>好：有些情况下可以改变组件的HTML路径——IResourceFinder；对设计人员也会比较亲切——得益于wicket:id的使用。(用<a
+		href="https://issues.apache.org/jira/browse/WICKET-3434">CSS的Selector</a>我也很喜欢，但是貌似增加了不必要的难度。)
+	</li>
+	<li>其他：模板也是需要类继承。</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://www.oracle.com/technetwork/java/javaee/javaserverfaces-139869.html">JSF2</a>
+</h4>
+<ul>
+	<li>Push/Pull：Push</li>
+	<li>难易：中等</li>
+	<li>恶：比如PRG的实现。</li>
+	<li>好：jsfc应该不错，方便设计人员，即便对开发人员也应该有帮助。</li>
+	<li>其他：忘了JSF1吧。</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://s2container.seasar.org/2.4/ja/">Seasar2</a>
+</h4>
+<p>Seasar是和Spring，Guice相当的AOP/DI框架。同时对表现层做了些整合，包括Struts1，JSF1和Wicket(截至2011年底仍然Sandbox)等。</p>
+<p>官方推荐这两个：</p>
+<ul>
+	<li>SAStruts：Strut1。整合得相当到位，发挥了Struts1的极致</li>
+	<li>Teeda：JSF1的实现。直接使用HTML的ID属性的想法不错。</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://www.wocommunity.org/page/default">WebObjects</a>
+</h4>
+<ul>
+	<li>Push/Pull：Pull</li>
+	<li>难易：中等</li>
+	<li>恶：同Wicket等控件模式的一样，绑定得很紧。</li>
+	<li>其他：当初用的是4.x来着，从开发工具到Application服务器全部集成在一起。真不愧是Apple的大一统风范！</li>
+</ul>
+<br>
+
+<h4>
+	<a href="http://code.google.com/intl/ja/webtoolkit/">GWT</a>
+</h4>
+<ul>
+	<li>Push/Pull：Pull</li>
+	<li>难易：中等</li>
+	<li>恶：开发人员用Java，生成代码几乎全部是Javascript，设计人员如何插手？</li>
+	<li>好：设计人员如果有GWT知识背景估计会很Happy。或者队伍成员只会Java......</li>
+	<li>好：控件丰富。</li>
+</ul>
+<br>
+
+<h4>
+	<a href="#">个人理想中的</a>
+</h4>
+<p>我认为，随着HTML5的推进，这层可以直接扔掉！好比是“反GWT”！是的！把整个服务器端的view层都扔掉！即使是一个轮子，能砍去也好！！！</p>
+<p>回头整理下对Web Application开发框架的一些想法。</p>
+<br>

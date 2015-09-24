@@ -1,0 +1,169 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p>说是Swing，还是要用到jdesktop。刚刚试过RCP，很是不感冒它全部重新搞1套的风格(虽然我也知道那是历史遗留问题)。So…我希望能有个干净简单的Java来去去腻…</p>
+<br>
+
+<p class="strong">◇NetBeans</p>
+<p>真的不错！走出JBuilder的阴影，在Eclipse里爽过后，NetBeans仍然可以吸引住我！
+<p>
+	<strong><u>Java世界能统一项目配置规范，不要N个IDE有N个风格。这样就可以更自由的选择IDE！</u></strong>
+</p>
+<br>
+
+<p class="strong">◇@Action org.jdesktop.application.Action</p>
+<p>标记一个动作。可以绑定某个属性在值变更时触发；可以设置阻塞范围；etc。。。</p>
+<br>
+
+<blockquote>
+1: @Action<br>
+2: <span style="color: #0000ff;">public</span> Task testAction() {<br>
+3: 	    ...<br>
+4: }
+</blockquote>
+<br />
+第2行的Task可以使得该动作异步。如果是void，则同步。
+<br />
+主动触发一个Action，代码如下。
+<blockquote>
+1: Task t = <span style="color: #0000ff;">new</span> Task(getApplication());<br>
+2: ApplicationContext ac = getApplication().getContext();<br>
+3: TaskMonitor tm = ac.getTaskMonitor();<br>
+4: TaskService ts = ac.getTaskService();<br>
+5: <br>
+6: <span style="color: #008000;">//使了那么大力气为了这句。</span><br>
+7: ts.execute(t);<br>
+8: <br>
+9: tm.setForegroundTask(t);
+</blockquote>
+<br />
+
+<p class="strong">◇整合Google Guice</p>
+<p>在Guice和Spring间犹豫了下，想来想去这么有时间不如玩些新鲜的。于是选择了Guice。</p>
+<p>想当然的觉得只要@Inject，配置好Module就可以了，Guice就能照顾剩下的一切了。事实上，还得老老实实的从头来，必须让Guice从一开始就接手才可以。B/S的项目做多咧！</p>
+<blockquote>
+1: <span style="color: #008000;">/**<br>
+2:  * 一.入口Application。<br>
+3:  */</span><br>
+4: <span style="color: #0000ff;">public&nbsp;class</span> App <span style="color: #0000ff;">extends</span> SingleFrameApplication {<br>
+5: <br>
+6:       <span style="color: #0000ff;">private</span> View view;<br>
+7: <br>
+8:       @Inject<br>
+9:       <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span> setView(View view) {<br>
+10:          <span style="color: #0000ff;">this</span>.view = view;<br>
+11:     }<br>
+12: <br>
+13:     @Override<br>
+14:     <span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">void</span> startup() {<br>
+15: <br>
+16:         List&lt;Module&gt; modules = <span style="color: #0000ff;">new</span> ArrayList&lt;Module&gt;();<br>
+17: <br>
+18:         <span style="color: #008000;">//初始化Guice。</span><br>
+19:         <span style="color: #008000;">//配置Application和ApplicationContext</span><br>
+20:         modules.add(<span style="color: #0000ff;">new</span> Module() {<br>
+21: <br>
+22:             <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span> configure(Binder binder) {<br>
+23:                 binder.bind(ApplicationContext.<span style="color: #0000ff;">class</span>).toInstance(getContext());<br>
+24:             }<br>
+25:         });<br>
+26: <br>
+27:         <span style="color: #008000;">//配置View。</span><br>
+28:         modules.add(<span style="color: #0000ff;">new</span> Module() {<br>
+29: <br>
+30:             <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span> configure(Binder binder) {<br>
+31:                 binder.bind(View.<span style="color: #0000ff;">class</span>).toInstance(<span style="color: #0000ff;">new</span> View(Application.getInstance(App.<span
+		style="color: #0000ff;">class</span>)));<br>
+32:             }<br>
+33:         });<br>
+34: <br>
+35:         <span style="color: #008000;">//配置其他依赖</span><br>
+36:         modules.add(<span style="color: #0000ff;">new</span> MemoModule());<br>
+37:         Injector injector = Guice.createInjector(modules);<br>
+38: <br>
+39:         <span style="color: #008000;">//注册Application。</span><br>
+40:         injector.injectMembers(<span style="color: #0000ff;">this</span>);<br>
+41: <br>
+42:         <span style="color: #008000;">//Start up</span><br>
+43:         show(view);<br>
+44:     }<br>
+45:   ...<br>
+46: }
+</blockquote>
+
+<br>
+<blockquote>
+1: <span style="color: #008000;">/**<br>
+2:  * 二.View里面的控件也必须注入。<br>
+3:  */</span><br>
+4: <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span> View <span style="color: #0000ff;">extends</span> FrameView {<br>
+5: <br>
+6:     @Inject<br>
+7:     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span> setXyzJPanel(XyzJPanel xyzJPanel) {<br>
+8:         <span style="color: #0000ff;">this</span>.memoJPanel = memoJPanel;<br>
+9: <br>
+10:     ...<br>
+11: <br>
+12: }
+</blockquote>
+<br />
+↓↓↓最后这里，才是目的所在。老天啊！一把辛酸泪啊！
+<blockquote>
+1: <span style="color: #008000;">/**<br>
+2:  * 三.最后的Service注入。<br>
+3:  */</span><br>
+4: <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span> XyzJPanel <span style="color: #0000ff;">extends</span> javax.swing.JPanel {<br>
+5: <br>
+6:      <span style="color: #0000ff;">private</span> XyzService servie;<br>
+7: <br>
+8:      @Inject<br>
+9:      <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span> setServie(XyzService servie) {<br>
+10:          <span style="color: #0000ff;">this</span>.servie = servie;<br>
+11:     }<br>
+12: <br>
+13:     @Action<br>
+14:     <span style="color: #0000ff;">public</span> Task save() {<br>
+15: <br>
+16:         Application app = Application.getInstance(App.<span style="color: #0000ff;">class</span>);<br>
+17:         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">new</span> Task(app) {<br>
+18: <br>
+19:             @Override<br>
+20:             <span style="color: #0000ff;">protected</span> Object doInBackground() <span style="color: #0000ff;">throws</span> Exception {<br>
+21:                 servie.execute();<br>
+22:                 <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">null</span>;<br>
+23:             }<br>
+24:         };<br>
+25:     }<br>
+26: <br>
+27:    ...<br>
+28: }
+</blockquote>

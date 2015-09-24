@@ -1,0 +1,151 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+<h4>◆ 概要(What)</h4>
+<p>垃圾回收(Garbage&nbsp;Collection=GC)就是一种自动内存管理方式，自动替程序员照顾那些废弃的内存。好多面向对象的语言都有这个功能。Apple在OS
+	10.5里追加了这个功能。(iOS 5中也要追加类似的功能。)</p>
+<p>
+	在这之前就是传统的retain,release,auto release pool.可以参考 <a 	href="http://mmclxy.wordpress.com/category/objective-c/">这里</a>。
+</p>
+
+<h4>◆ 为什么用(Why)</h4>
+<p>最大的理由就是简化代码。使得代码易懂，健壮，易于维护。</p>
+<p>据我所知，内存管理是一个相当容易出错的地方。如果系统能自动处理掉，会让程序员集中更多的精力在业务逻辑上。(那些大量重复的retain,release,autorelease;还有retain&nbsp;	cycles,多线程下auto release pool的处理。。。简直就是坑爹啊！)</p>
+<p>然后就是那个敏感的性能问题。官方文档中有提到通常情况下性能比传统的管理内存方式要差。但是在多线程等场合下反而会快些。</p>
+<p style="font-weight: bold; color: red;">（我觉得除非特殊要求性能的情况，否则咱们还是自动管理吧！）</p>
+<table>
+	<caption>官方的例子</caption>
+	<thead>
+		<tr>
+			<td>传统方式(完整实现)</td>
+			<td>GC方式</td>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+<blockquote>
+@implementation Widget<br/>
+- (Widget *)nextWidget {<br/>
+ 　@synchronized(self) {<br/>
+　　return [[nextWidget retain] autorelease];<br/>
+　}<br/>
+}<br/>
+<br/>
+- (void)setNextWidget:(Widget *)aWidget {<br/>
+　@synchronized(self) {<br/>
+　　if (nextWidget != aWidget) {<br/>
+　　　[nextWidget release];<br/>
+　　　nextWidget = [aWidget retain];<br/>
+　　}<br/>
+　}<br/>
+}<br/>
+@end<br/>
+</blockquote>
+	</td>
+			<td>
+<blockquote>
+@implementation Widget<br/>
+- (Widget *)nextWidget {<br/>
+　return nextWidget;<br/>
+}<br/>
+<br/>
+- (void)setNextWidget:(Widget *)aWidget {<br/>
+　nextWidget = aWidget;<br/>
+}<br/>
+@end<br/>
+</blockquote>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p>
+	清爽吧？！请允许我再强调下：<a href="#">Simple is best!</a>
+</p>
+
+<h4>◆ 什么时候用(When)</h4>
+<p>Apple官方推荐用在新项目上。如果你原本的项目用传统的内存管理方式跑得好好的，没多大必要换成GC。</p>
+
+<h4>◆ 怎么用(How)</h4>
+<p>编译时打开垃圾回收的选项。</p>
+<ul>
+	<li>不启用(Unsupported)。也就是传统的管理方式。</li>
+	<li>混用(Supported)。除非你在写基础框架，即便官方也不推荐。(还怕不够折腾？！)</li>
+	<li>必须(Required)。只使用自动垃圾回收机制。彻底忽略掉 retain/release方法。</li>
+</ul>
+<p>XCode 4.2下在 Project -> Build setting -> All -> Objective-C Garbage Collection，如下图：</p>
+<img src="http://img5.ph.126.net/1nBVQOAgyK61zxNTVfz7Yg==/2366641604183882915.jpg"
+	alt="XCode4.2 GC Setting" title="XCode4.2 GC Setting" width="513" height="571"
+	class="aligncenter size-full wp-image-95" />
+<h4>◆ 参考</h4>
+<ul>
+	<li><a href="http://mmclxy.wordpress.com/category/objective-c/">MM的Objective-C</a></li>
+	<li><a
+		href="http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/GarbageCollection/Introduction.html">Apple
+			Documents</a></li>
+</ul>
+<p style="text-align: center; color: blue;">------------------------- 长吗？！下面是些细节，可以跳过！
+	-------------------------</p>
+<h4>◆ 判别机制</h4>
+<p>一句话说是：“从根集合(Root Set)能找到的强引用都不是垃圾！”</p>
+<p>参考下面官方的示例图。</p>
+<img
+	src="http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/GarbageCollection/Art/gc_references.jpg"
+	alt="GC References" title="GC References" width="446" height="296"
+	class="aligncenter size-full wp-image-95" />
+<ul>
+	<li>A,B,C不是垃圾。此外都是垃圾回收对象。</li>
+	<li>X是弱引用 = 被回收。(弱引用，哈！私以为是另一个Objective-C结构混乱的例子。)</li>
+	<li>D,E无法从根到达 = 被回收。</li>
+	<li>H,F,G也同样无法从根到达 = 被回收。(强调即便形成retain cycles，也能成功被回收。)</li>
+</ul>
+<h4>◆ 回收机制</h4>
+<p>在判别后，需要回收掉那些垃圾。</p>
+<p>比如某个属性先后被设置 v1,v2,v3,v4,v5。v5是当前值。</p>
+<ul>
+	<li>按世代管理回收。比如上面的例子，旧的值：v1~v4可能会被回收掉。</li>
+	<li>通常是2～8个世代。上面的例子里，某次回收可能只回收掉v2,v4。系统会时不时来上次整体回收(full collection)。会一时降低性能。</li>
+	<li>回收是自动的，也可以主动触发。</li>
+	<li>回收有自己独立线程。自然带来一定的系统开销。</li>
+	<li>回收依靠那些在编译时产生的代码。具体看官网示例吧。</li>
+	<li>回收无法知道先后顺序。</li>
+	<li>GC有可以调用的API。像上面的主动除非回收；暂停/重启；GC下的retain/release...(没啥特殊情况，就别折腾了！好不好？！)</li>
+</ul>
+<h4>◆ finalize 方法</h4>
+<p>一句话：“闲着没事别动它！”</p>
+<p>官方文档称在对象被回收前需要做的事情写在这里。GC在回收时会调用这个方法。所以有几个注意事项：</p>
+<ul>
+	<li>传统的那许多的清理工作<span style="font-weight: bold; color: red;">不要</span>做。
+	</li>
+	<li><span style="font-weight: bold; color: red;">不要</span>复活别的对象。会造成那些对象无法被回收。</li>
+	<li>回收是无序的所以访问其他对象要小心。</li>
+</ul>
+<h4>◆ 其他</h4>
+<ul>
+	<li>一个不够严谨的测试显示，GC比传统慢50%左右。</li>
+	<li>GC下不用担心Retain Cycles.</li>
+	<li>GC下传统的方法都不再起作用。(包括retain, release, dealloc, autorelease, retainCount)</li>
+	<li>当心那些弱引用(__weak的delegate,弱引用的集合等)，它们可能会随时消失。</li>
+</ul>

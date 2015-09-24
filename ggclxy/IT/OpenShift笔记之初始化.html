@@ -1,0 +1,38 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+<p>红帽子RedHat的OpenShift已经出来有阵子了，最近才“百忙之中”找时间玩玩。个中经历，记个笔记。</p>
+<p>话说这个名字真的“好记”，好多人第一眼看上去，都把Shift看少个f。且不管名字，品质的口碑据称可算是业界良心。连GFW都盯上它了，你说良心不良心！（注：眼下https还是可以访问的，只是时断时续的，也不知是哪里的毛病...）</p>
+<br>
+<p>上手很简单，注册帐号，添加应用，数据库等。操作简单，网上也有大票的攻略，没什么可说的。</p>
+<p>OpenShift的计量单位称作Gear，每帐户3个。看似不多，其实不少。比如添加个Tomcat7跑Java
+	Servlet的话算一个，再给它添加个数据库，还是算一个。还可以动态扩展，3个Gear绑成1个用。除了Java以外，PHP，NodeJS，Python，Ruby等好多都支持。</p>
+<p>
+	也是PaaS，但比GAE好！至少有数据库给你搞啊！<a href="http://clxy.iteye.com/blog/1961031">在GAE上要折腾个DB，真是要命！</a>
+</p>
+<br>
+<p>
+	如果是Java开发，推荐用Eclipse，在添加好应用后，跟着<a
+		href="https://www.openshift.com/blogs/getting-started-with-eclipse-paas-integration">这篇官方文档</a>走，基本没问题。
+</p>
+<p>几个注意事项：
+<ul>
+	<li>SSH那里比较折腾...</li>
+	<li>本地调试的话，参考<a
+		href="http://stackoverflow.com/questions/11222924/how-to-test-an-openshift-application-on-local-host">StackOverFlow的这篇问答。</a></li>
+	<li>OpenShift的发布流程是只要上传到它的Git库里，就相当于更新了。它自己会重新启动。</li>
+	<li>添加的数据库可以远程访问。我成功尝试用MySQL的Workbench连接上OpenShift的MySQL5.5。设置参考<a
+		href="https://www.openshift.com/forums/openshift/connecting-to-openshift-mysql-using-workbench">这篇问答</a>。目前MySQL5.5还不能在页面上指定添加PhpMyAdmin，貌似是Bug会改。或者索性裸上MySQL，然后用上面的方法远程管理，也不差到哪里。
+	</li>
+	<li>最后，连接不稳定是硬伤！不知是GFW，还是OpenShift，还是我自己的毛病，时不时直接断掉。累人啊，也许测试性质的开发还可以？</li>
+</ul>
+</p>

@@ -1,0 +1,13 @@
+--- apktool ： 打开APK文件，得到Smali。
+java -jar apktool.jar d Xxx.apk -o Xxx
+
+--- dex2jar ： 反编译得到jar文件
+d2j-dex2jar -f -o Xxx.jar Xxx.apk
+
+--- JD or/and JAD ： 生成Java文件。
+
+--- 参照Smali文件进行修改。
+
+--- Virtuous Ten Studio ： 免费全部整合的工具集。
+
+糟糕的程序员是最好的混淆器！

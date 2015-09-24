@@ -1,0 +1,373 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	font-size: large;
+}
+
+.red {
+	color: red;
+}
+
+.blue {
+	color: blue;
+}
+</style>
+<p>
+	最近折腾了好阵子的以Spring为基干的开发框架。其中用到<a href="http://twitter.github.io/bootstrap/">Bootstrap</a>，些许心得体会记在这里。
+</p>
+<p>
+	说起Bootstrap火了这许久，无论阿猫阿狗们都开始用了。您要不会耍两把，都不好意思自称是个“<del>不懂设计的</del>程序员”！哈！
+</p>
+<p>后台做的多了，刚开始接触前台时，狮子咬天无从下口。以前曾折腾过个人站点，各种半透明磨砂效果，各种动画特效，各种控件杂七杂八的拼在一起。每个效果单独倒是都还可以，凑在一块就不是那回事了，左右不过是堆“漂亮”的垃圾。</p>
+<p>Bootstrap的风格应该说是在以简约为主体——黑白灰为主色，辅以柔和的线条，再点缀些鲜艳的蓝绿赤橙。这种严肃里掺杂了点活泼的风格，正好私用商用两相宜。我就那么一说，哈。</p>
+<br>
+
+<h3 class="blue">★：下载</h3>
+<p>Bootstrap可以在它的官网下载到。http://twitter.github.io/bootstrap/</p>
+<p>
+	初次的时候直接点主页的“Downlaod Bootstrap”即可，熟悉后用<a href="http://twitter.github.io/bootstrap/customize.html">自定义(customize)</a>页面定制更方便些。强烈推荐后者。
+</p>
+<p>Bootstrap的全部内容包括：</p>
+<ul>
+	<li>Css：Bootstrap的核心。
+		<p>下载的文件中css有两个，据网上讲，如果你想要响应式布局，两个都需要包含进去（Bootstrap3以后，将会合并成1个）。但如果你是定制的，那么就只有1个文件。似乎应该大概可能是Bootstrap帮你合并过了。</p>
+	</li>
+	<li>Javascript：如果还想使用它的控件，那么Javascript也是需要的。
+		<p>一样可以在自定义页面定制，比如只选择想要的。下载的文件包括所有控件所需的JS，从源代码能看出来是所有片段拼在一起。</p>
+	</li>
+	<li>Image：Glyphicons的图标，个人觉得是够用了。
+		<p>有两个文件分别是黑白两色的。原本收费的图标，和Bootstrap一起则可以免费使用。但需要在网站里提供个link指向Glyphicons，不过是可选的。</p>
+	</li>
+</ul>
+<p>除了CSS外，另外两个都是可选的。</p>
+<br>
+
+<h3 class="blue">★：定制</h3>
+<p>面对上面提到的定制页面，初期不熟悉时，茫茫多的选项可能让人无从选择，介绍下个人的“点滴”心得。</p>
+<ul>
+	<li>1. Choose components
+		<p>全选！除了有些业务性较强的情况下，Carousel可能用不上。Responsive里面窄屏和超大屏的部分也有可能比较多余，但也许说不上就会有某个Boss在使用手机或平板或大屏，谁知道呢！其他的我觉得都需要。</p>
+	</li>
+	<li>2. Select jQuery plugins
+		<p>同上，只有Carousel似乎可切出。除非和已有的其他控件库重复，其他控件貌似都是基本和常用的。</p>
+	</li>
+	<li>3. Customize variables
+		<p>这里参数较多，好在注释也比较清晰，但是实在是不少。</p>
+		<p>我只调整了Navbar -> @navbarHeight。如果要自己鼓捣CSS的话比较烦，涉及几个地方，不如在这里一次搞定。</p>
+		<p>另外字体也应该在这里搞定才好。特别是如果不加中文字体，中文会无法显示。（但加上以后发现整体效果变差，最终还是自己折腾CSS去了。）</p>
+	</li>
+</ul>
+<br>
+<p>
+<a href="http://ggclxy.blog.163.com/blog/static/193524031201351131012524/" style="float: right">Bootstrap笔记（二）</a>
+</p>
+
+<h3 class="blue">★：再定制</h3>
+<p>到这我们都下载完，扔进自己的项目里面，虽然可以马上用了，但是还有些地方需要调整。</p>
+<p>我采取了通过加载顺序覆盖Bootstrap的方式，如下：</p>
+<pre class="prettyprint">
+&lt;link href='bootstrap.css' rel="stylesheet"&gt;
+&lt;link href='myApp.css' rel="stylesheet"&gt;&lt;!-- ← 覆盖bootstrap的css等 --&gt;
+</pre>
+<p>原因是比起直接修改Bootstrap的源代码，更加方便维护。如果需要升级Bootstrap，也只需整体替换新版的bootstrap.css文件即可。当然这种方式影响性能，不适合生产环境。</p>
+<p>另外注意下面这些内容大多都不是必须的，纯粹个人喜好及心得罢了。</p>
+myApp.css内容如下
+<pre class="prettyprint">
+body {
+	/*因为调整过navbar的高度，这里需要联动。*/
+	padding-top: 80px;
+	/* 追加中文和日文字体 @注1 */
+	font-family: "Microsoft Yahei", "MS PGothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+input,button,select,textarea {
+	/* 追加中文和日文字体 */
+	font-family: "Microsoft Yahei", "MS PGothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+form {
+	/* 使窗体居中。 */
+	margin: 0 auto 0px;
+	padding: 19px 29px 29px;
+	background-color: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: 5px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+
+/*日付*/
+.date input {
+	text-align: center;
+	ime-mode: disabled; /*IE和FF以外ime-mode无效。*/
+}
+
+/*数字*/
+input[type="number"] {
+	text-align: right;
+	ime-mode: disabled; /*IE和FF以外ime-mode无效。*/
+}
+
+/**
+ * ===-------------------------------------- 以下是覆盖Bootstrap的设置。
+ */
+.navbar-inner .container-fluid {
+	/*修改导航条的元纯黑背景，改成紫色线性过渡。*/
+	background: linear-gradient(45deg, #020031 0%, #6d3353 100%);
+}
+
+/*导航条图片的模糊转清晰特效*/
+.navbar-inner img {
+	opacity: 0.5;
+	transition: opacity 0.3s ease-in-out;
+}
+
+.navbar-inner a:HOVER img {
+	opacity: 1;
+}
+
+/*导航条上追加App图标。具体数字取决于图标尺寸。*/
+.brand {
+	background: url(../img/ssm1.png) no-repeat left center;
+	background-size: 49px 33px;
+	text-indent: 35px;
+}
+
+/*窗体中注释标签加粗。*/
+.control-label {
+	font-weight: bold;
+}
+
+/*Modal的漆黑背景改成透明。受不了屏幕整体忽明忽暗的效果！*/
+.modal-backdrop,.modal-backdrop.fade.in {
+	background-color: rgba(0, 0, 0, 0);
+}
+
+/*貌似不起作用！*/
+.modal.fade {
+	transition: opacity .3s ease-in-out;
+}
+
+/*调整Modal位置，原设置有些偏上*/
+.modal,.modal.fade.in {
+	top: 25%; /* was 10% */
+}
+
+.popover {
+	max-width: 600px;
+}
+
+.tooltip-inner {
+	max-width: 600px;
+	text-align: left;
+}
+
+/*error时tooltip的样式 @注2 ===------------------------------ start */
+.tooltip.error .tooltip-inner {
+	box-shadow: 1px 1px 3px #b94a48;
+	background-color: #b94a48;
+	color: white;
+}
+
+.tooltip.error.top .tooltip-arrow {
+	border-top-color: #b94a48;
+}
+
+.tooltip.error.right .tooltip-arrow {
+	border-right-color: #b94a48;
+}
+
+.tooltip.error.left .tooltip-arrow {
+	border-left-color: #b94a48;
+}
+
+.tooltip.error.bottom .tooltip-arrow {
+	border-bottom-color: #b94a48;
+}
+/*===------------------------------ end */
+</pre>
+注1：字体应该在定制时搞定才好。
+<br>
+注2：tooltip需要和Javascript配合，在后面有说明。这里只追加了error时的样式。
+<br>
+<p>
+<a href="http://ggclxy.blog.163.com/blog/static/1935240312013511324349/" style="float: left">Bootstrap笔记（一）</a>
+<a href="http://ggclxy.blog.163.com/blog/static/193524031201351132727837/" style="float: right">Bootstrap笔记（三）</a>
+</p>
+
+<h3 class="blue">★：Modal</h3>
+<p>Modal有两个地方让我不满意。</p>
+<h4>其一是那个backdrop，整个画面忽明忽暗的非常晃眼的说。特别在照明不足的房间里，搞得跟恐怖片似的。这个可以用前面的css搞定。</h4>
+<h4>
+	然后就是按钮的回调，稍显设计不足。于是自己做了个共通的对话框。主要参考并简化了网上的<a href="http://confirmmodal.codeplex.com/">Bootstrap.ConfirmModal</a>，顺便加上jQuery
+	UI的拖动效果。
+</h4>
+<p>代码如下:</p>
+1. 共通的对话框html模板，隐藏在页面上。
+<pre class="prettyprint">
+&lt;div class="modal hide" id="modalDiv"&gt;
+	&lt;div class="modal-header"&gt;
+		&lt;button type="button" class="close" data-dismiss="modal" aria-hidden="true"&gt;&times;&lt;/button&gt;
+		&lt;h3&gt;Please confirm&lt;/h3&gt;
+	&lt;/div&gt;
+	&lt;div class="modal-body"&gt;
+		&lt;p&gt;Body contents&lt;/p&gt;
+	&lt;/div&gt;
+	&lt;div class="modal-footer"&gt;
+		&lt;button type="button" class="btn pull-left" data-dismiss="modal" aria-hidden="true"&gt;Close&lt;/button&gt;
+		&lt;a class="btn btn-primary" id="confirmYesBtn"&gt;OK&lt;/a&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<br>
+2. JS代码
+<pre class="prettyprint">
+dialog = function(settings) {
+
+	var options = $.extend({
+		selector : '#modalDiv',// 对话框模板选择器
+		header : 'Please confirm',// 标题内容
+		headerSelector : '.modal-header h3',// 标题选择器
+		body : 'Body contents',// 主体内容
+		bodySelector : '.modal-body p',// 主体选择器
+		handleSelector : '.modal-header',// 拖动条选择器
+		// 简化的OK按钮动作。
+		callback : false
+	}, settings);
+
+	var modal = $(options.selector);
+	$(options.headerSelector).html(options.header);
+	$(options.bodySelector).html(options.body);
+	modal.draggable({
+		handle : options.handleSelector
+	});
+	var buttons = options.buttons;
+	if (!buttons) {// 默认OK动作
+		buttons = [ {
+			selector : '#confirmYesBtn',
+			click : function() {
+				if (options.callback) {
+					options.callback();
+				}
+				modal.modal('hide');
+			}
+		} ];
+	}
+	$.each(buttons, function(i, b) {
+		$(b.selector, modal).off('click').click(b.click);
+	});
+
+	modal.modal('show');
+	return modal;
+};</pre>
+<br>
+3. 调用示例
+<pre class="prettyprint">
+dialog({
+	callback : function() {
+		console.log('OK is clicked.')
+	},
+	body : 'Test:' + new Date()
+});</pre>
+<br>
+效果截图<br>
+<img src="http://img2.ph.126.net/8HM7zWuIrv9fAjoF5bgsiQ==/41095346617862390.jpg">
+<br>
+<p>
+<a href="http://ggclxy.blog.163.com/blog/static/193524031201351131012524/" style="float: left">Bootstrap笔记（二）</a>
+<a href="http://ggclxy.blog.163.com/blog/static/193524031201351134432241/" style="float: right">Bootstrap笔记（四）</a>
+</p>
+
+<h3 class="blue">★：Tooltip</h3>
+<p>这个纯粹出于自己的需要。在form提交时要对各个控件进行有效验证，验证结果里的那些错误信息，希望能够用Tooltip来显示在控件的旁边。默认的黑底白字显得很别扭，不大合适。</p>
+<p>
+	由于Bootstrap本身没有开放这个接口，实现起来甚是麻烦。网上查下来，动态改颜色的，替换html模板的，改源码的...五花八门。最终选择了<a href="http://stackoverflow.com/questions/12170357/" title="参考这里">修改Bootstrap源代码</a>的方式。因为我觉得这才是“应该的”模样，哈。
+</p>
+1. 修改Bootstrap的源码。在tooltip的applyPlacement方法中如下位置添加
+<pre class="prettyprint">
+...
+$tip.offset(offset).addClass(placement).addClass('in');
+// 添加css。@see http://stackoverflow.com/questions/12170357/
+if (this.options.cssClass) {
+	$tip.addClass(this.options.cssClass);
+}
+...
+</pre>
+<br>
+2. 调用示例
+<pre class="prettyprint">
+field.tooltip({
+	...
+	cssClass : 'error',
+	...
+}).tooltip('show');
+</pre>
+<br>
+3. error的css请参考前面的内容。
+<br>
+效果图<br>
+<img src="http://img0.ph.126.net/5ItrSr74J5UlBsJG0I9saA==/3005871276393250821.jpg">
+<br>
+日文是因为在调试国际化。
+<br><br>
+<p>
+<a style="float: left" href="http://ggclxy.blog.163.com/blog/static/193524031201351132727837/">Bootstrap笔记（三）</a>
+<a style="float: right" href="http://ggclxy.blog.163.com/blog/static/19352403120135114323913/">Bootstrap笔记（五）</a>
+</p>
+
+<h3 class="blue">★：第三方</h3>
+<p>Bootstrap还是有些不足，好在有很多第三方的控件库（jQuery的style就是大把大把的控件库）。以下依然纯粹是个人调查结果，不代表任何方面的好坏优劣。</p>
+<ul>
+	<li>Table的排序。http://plugins.jquery.com/tablesorter/
+		<p>提供Bootstrap的样式；提供各种插件，比较灵活。是的，虽然它本身就是个插件，还是有好多提供给这个插件的插件。</p>
+	</li>
+	<li>日历。http://www.eyecon.ro/bootstrap-datepicker
+		<p>一样有Bootstrap的样式，实际上就是只为Bootstrap做的。支持国际化。</p>
+	</li>
+	<li>关于jQuery UI。
+		<p>因为和Bootstrap的控件有太多的重复，两者间无论选择哪个，恐怕就得放弃另一个。</p>
+		<p>
+			我自己的选择是放弃jQuery UI的控件——Widgets，留下基本功能，比如UI Core和Interactions等。主要原因是jQuery UI的样式和Bootstrap无法完美匹配。要说相近的，可能只有Flick这个主题的还可以。或者可以参考下<a href="http://addyosmani.github.io/jquery-ui-bootstrap/">jquery-ui-bootstrap</a>这个项目。
+		</p>
+	</li>
+</ul>
+<br>
+
+<h3 class="blue">★：关于Yahoo Pure</h3>
+<p>和Bootstrap比较类似，简洁但没什么控件；Layout是亮点，比Bootstrap多些；Grid的实现比较有趣，至少HTML代码可以简单些。</p>
+<p>总体说除了按钮的样式比较老土，比较闹心以外，其他还好。</p>
+<br>
+<p>
+<a href="http://ggclxy.blog.163.com/blog/static/193524031201351134432241/" style="float: left">Bootstrap笔记（四）</a>
+</p>

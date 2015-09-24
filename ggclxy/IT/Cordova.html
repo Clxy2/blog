@@ -1,0 +1,80 @@
+=== Intellij IDEA
+Gradle项目的Module Dependency
+两个地方
+	project structure -> Modules -> {Module}
+	的Dependencies和该Module的Gradle设置(比如android-gradle)里的Dependencies。
+	只需设置其中一处，Intellij Idea会同步。但同步有延迟。同步前编译会报错。
+
+	另外，export需要点掉，不如报错：
+	com.android.dex.DexException: Multiple dex files define
+
+=== Phonegap
+	很久没有更新。既然用不上Adobe的Service，直接使用Cordova
+
+=== 安装
+	npm install cordova
+
+=== 建工程
+
+cordova create cord cn.clxy.cordova CordovaTest
+cordova 建立 目录名 包名 标题
+
+cd cord
+cordova platform add android
+
+plugin
+cordova plugin rm org.apache.cordova.device
+cordova plugin rm org.apache.cordova.camera
+cordova plugin rm org.apache.cordova.file
+cordova plugin rm org.apache.cordova.globalization
+
+cordova plugin add cordova-plugin-device
+cordova plugin add cordova-plugin-camera
+cordova plugin add cordova-plugin-file
+cordova plugin add cordova-plugin-globalization
+
+
+=== intellij idea
+
+=--- Error : peer not authenticated
+
+old:
+repositories {
+    jcenter()
+}
+
+new:
+repositories {
+    jcenter {
+        url "http://jcenter.bintray.com/"
+    }
+}
+
+=--- Prepare cordova before make
+
+Run -> Edit configurations -> Before launch -> Add -> Run External Tool
+Program -> D:\nodejs\nodejs\cordova.cmd
+Parameters -> prepare android
+Working directory -> $ProjectFileDir$
+
+
+=============== Intellij IDEA + Cordova
+项目根目录
+├─.idea							Intellij 项目设置。
+├─hooks							Cordova用设置。
+├─out								Intellij 输出目录。
+├─platforms						各平台代码。	
+│  └─android					Android平台
+│      ├─assets					Cordova会将HTML文件Copy至此。注意有1M的尺寸限制。
+│      │  └─www
+│      ├─cordova				Cordova脚本。
+│      ├─CordovaLib			Cordova的Android源代码。
+│      │  ├─gen
+│      │  └─src
+│      ├─gen
+│      ├─libs
+│      ├─platform_www		Cordova的Android的UI文件。
+│      ├─res						Android的资源
+│      └─src						Android的代码
+├─plugins							Cordova插件。
+└─www							UI的HTML文件

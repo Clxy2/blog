@@ -1,0 +1,136 @@
+<p class="first">
+	&nbsp; 在stackoverflow上有个关于Android大文件上传的讨论。尝试着用<a href="http://hc.apache.org/">Apache
+		HttpComponents</a>来解决。一番折腾，几多挫折，相当有趣。
+</p>
+<br>
+<br>
+<hr>
+<h3>环境准备</h3>
+<p>
+	&nbsp; 习惯了在Eclipse上开发，于是下载官方插件。早早升级到Eclipse4.3，当然是下载<a
+		href="http://dl.google.com/eclipse/plugin/4.3">Google Update Site for Eclipse 4.3</a>。这个插件包括GAE和GWT在内，需要挑选出Android的才好。
+</p>
+<p>
+	<img
+		src="http://dl2.iteye.com/upload/attachment/0087/7383/b49cdca3-f9a1-3e96-9bb4-401dabe0d550.png"
+		width="600px" height="240px" />
+</p>
+<p>&nbsp; 安装好的插件没有Android的SDK的，只有个SDK Manager，用这个再去下载及安装。在我折腾时4.3刚刚发布，但是没有Intel x86
+	Atom模拟器，只好4.2.2和4.3都装了。<br>个人的选择是这样的：</p>
+<ul>
+	<li>SDK Platform是必须的</li>
+	<li>Sample和Source也最好有，本地查资料快些。</li>
+	<li>由于是在windwos上开发的，所以那个Intel x86 Atom虚拟机是需要的。（怕是只需要这个吧。<br /> <img
+		src="http://dl2.iteye.com/upload/attachment/0087/7387/6a11ce77-a67b-3a58-894d-ce16fa8b3978.png"
+		width="600px" height="360px" /><br />&nbsp;
+	</li>
+</ul>
+<p>
+	&nbsp; 最后Extras里面的选择，Windows的话基本上必选那个Intel x86 Emulator
+	Accelerator(HAXM)，不然模拟器会慢到&ldquo;飘起&rdquo;。即使装上也没快不到哪里去，我那2010年的笔记本上虽然也能跑起来，但风扇也会不停的尖叫着...据我&ldquo;耳测&rdquo;，大抵接近《魔兽世界》或《星际争霸II》的水平。我了去的！<br />
+	<img
+		src="http://dl2.iteye.com/upload/attachment/0087/7389/dac30f68-fa2b-3059-87ad-b14ffb30b6e6.png"
+		width="600px" height="200px" /><br />
+</p>
+<p>&nbsp; 伴随着风扇的尖叫，折腾好那个简陋得不能再简陋的界面后，才发现我这个代码其实绝大部分无须Android的。（等我先去耳鸣一会儿...</p>
+<p>
+	<img
+		src="http://dl2.iteye.com/upload/attachment/0087/7391/e0fb47d1-d6ed-3a4a-a517-f7f615214ffb.png"
+		width="300px" height="330px" />
+</p>
+<br>
+<br>
+<hr>
+<h3>主要思路</h3>
+<p class="first">&nbsp;基本上是将大文件拆成小块，读取，上传。当所有文件块上传完成后，合并。</p>
+<ol>
+	<li>读取大文件。考虑到I/O竞争只用单线程；考虑到内存采取分批读取。 <pre name="code" class="java">ByteBuffer bb = ByteBuffer.allocate(partSize);
+int bytesRead = fc.read(bb);
+if (bytesRead == -1) {
+	break;
+}
+byte[] bytes = bb.array();
+parts.put(new Part(createFileName(fileName, i), bytes));
+</pre>
+	</li>
+	<li>将读取的文件块上传。通常多个线程会好些，但是太多又不行，默认用5线程上传。 <pre name="code" class="java">Part part = parts.take();
+if (part == Part.NULL) {
+	parts.add(Part.NULL);// notify others to stop.
+	break;
+} else {
+	uploader.upload(part);
+}
+</pre>
+	</li>
+	<li>读取和上传用BlockingQueue通信，最通用的生产/消费者模式。</li>
+	<li>服务器在接收到全部文件块后，合并。</li>
+	<li>还需考虑处理传送失败时，重新尝试上传部分。</li>
+	<li>由于Android的问题(参考下面Invocation Exception)，在Android上使用时需要用<a
+		href="https://code.google.com/p/jarjar/">jarjar</a>这个工具先处理下。
+	</li>
+</ol>
+<p>&nbsp;JDK5追加的java.util.concurrent功能，一直都是&ldquo;纸上谈兵&rdquo;，从来没真正使用过。这次好好折腾了下...</p>
+<p style="color: red">
+	<strong>&nbsp;代码(优化中)上传到<a href="https://github.com/clxy/BigFileUploadJava">GitHub</a>，如有兴趣或有需要请移步。<strong>
+</p>
+<br>
+<br>
+<hr>
+<h3>挫折坎坷</h3>
+<h4>Invocation Exception</h4>
+<p>&nbsp;起手遇到这个问题，在Eclipse本地跑程序还没问题，装进Andorid模拟器后，启动就报错。查下来HttpComponents各种方法找不到。可明明jar包都扔进去的说。网上翻了好久，才搞清楚Android里面有个旧版本的HttpComponents在作怪！就让人有些火大的说！</p>
+<p>&nbsp;您弄个老版本扔在那里，能不能想着升级下呢？听说还是beta版！</p>
+<p>&nbsp;然后就是Class加载顺序，自然该是source，自带jar包，最后才是系统默认的优先顺序才对。这是多么基本的规矩啊？！</p>
+<p>
+	&nbsp;搜索时还看到好像是Android开发组(Dalvik team)的某位跑出来，<a
+		href="http://android-developers.blogspot.com/2011/09/androids-http-clients.html">推荐用HttpURLConnection代替HttpComponents</a>。啥？！大哥你可以再搞笑些吗？虽然HttpComponents
+	4.x的评价不那么好，但你分别写个文件上传代码看看，差多少？差&ldquo;老鼻子&rdquo;了！
+</p>
+<p>&nbsp;最后，既然不推荐，你把老版本去掉好吗？这才叫占茅坑...</p>
+<p>
+	<strong>&nbsp;解决办法：</strong>用<a href="https://code.google.com/p/jarjar/">jarjar</a>这个工具把最新版的HttpComponents都换下包名，程序中引用指向这个新包。下面是jarjar的rule，只替换org.apache.http，放过其他的比如org.apache.commons等。因为Android里面还藏了大票apache
+	commons的东东！（在我花了九牛二虎之力，企图或是重新打包commons，或是提供&lsquo;伪&rsquo;实现，一通折腾之后才发现！
+</p>
+<pre name="code" class="java">	rule org.apache.http.** repack.org.apache.http.@1
+</pre>
+<br>
+<h4>Connection refused</h4>
+<p>&nbsp;解决掉包冲突后可以运行了。首当其冲的就是这个&ldquo;拒绝连接&rdquo;的错误。Android的AndroidManifest.xml里permission也加过了。</p>
+<pre name="code" class="xml">	&lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+</pre>
+<p>&nbsp;但还是失败。最终找到了问题所在&mdash;&mdash;没把模拟器当成独立的环境，习惯上地址直接写http://localhost/xxx！模拟器里的localhost是模拟器自己，而不是宿主机器。又因为是在Windows上开发的，所以最方便就是IP地址&mdash;&mdash;localhost改成192.168.x.x的局域网地址即可。</p>
+<br>
+<h4>Request not MultipartHttpRequest</h4>
+<p>&nbsp;终于能和服务器通信了，但服务器端不停报错ClassCastException，说Request不是MultipartHttpServletRequest。</p>
+<p>
+	<strong>解决办法：</strong>这个是我自己的问题。临时找来的测试环境，Spring的multipartResolver就根本没配置。
+</p>
+<pre name="code" class="xml">  &lt;bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" p:defaultEncoding="utf-8" /&gt;
+</pre>
+<br>
+<h4>文件拷贝</h4>
+<p>&nbsp;这个就不细说了，说多了都是丢人！单单个from和to把自己绕晕了好久...</p>
+<p>&nbsp;说结果吧。假如有两个FileChannel，分别是src和dest，需要将src的内容追加到dest的后面，该如何处理？有两种方法：</p>
+<ol>
+	<li><pre name="code" class="java">dest.transferFrom(src, 其他参数);</pre></li>
+	<li><pre name="code" class="java">src.transferTo(其他参数, dest);</pre></li>
+</ol>
+<p>&nbsp;效果是一样的，细微的区别在于&mdash;&mdash;作为参数的FileChannel的内部position会被改变！如果你对position有需求，那么就要当心了！（我在这里被绕晕的原因...应该是风扇还在一旁尖叫着...风扇应该怪模拟器...所以你看，最终都是google不好！灭哈哈！</p>
+<br>
+<h4>Connection Timeout</h4>
+<p>&nbsp;这个要怪Apache了。4.2后多了释放连接的方法，如果不显式调用，就不释放连接。导致其他线程在拿连接时timeout。4.2之后的写法如下：</p>
+<pre name="code" class="java">try {
+	HttpResponse response = client.execute(post);
+	// do something.
+} catch (Exception e) {
+	post.abort();
+	throw new RuntimeException(e);
+} finally {
+	post.releaseConnection();
+}
+</pre>
+<br>
+<br>
+<hr>
+<h3>大叔的抱怨</h3>
+<p>&nbsp;多年前(2009)曾经摸过Android，当时只是觉得它的源代码比较粗糙。4年过去了，现在看来，还是...糙！</p>

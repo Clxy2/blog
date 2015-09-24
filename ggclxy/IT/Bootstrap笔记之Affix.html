@@ -1,0 +1,108 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	font-size: large;
+}
+
+.red {
+	color: red;
+}
+
+.blue {
+	color: blue;
+}
+</style>
+<p>
+	升级Bootstrap 3时，顺便玩了下Affix——通常用在侧边导航条——这个控件，下面是一些坎坷和心得。（<a href="http://getbootstrap.com/javascript/#affix">详细的官方文档</a>）
+</p>
+<h3 class="blue">★：Top</h3>
+<p>首先就是Top——高度，由于我页面上有固定的顶导航条（用Bootstrap的通常都会有），所以必须调整Top高度。</p>
+<p>通用的代码如下</p>
+<pre class="css">
+var navHeight = $('.navbar').outerHeight(true) + 10;
+$sideBar.affix({
+	offset: {
+		top: navHeight
+	}
+});
+</pre>
+<p>加上10px的余量是为了顶导航条和下面内容之间的间隙。其实也可以自动计算，只是太麻烦偷个懒。另外如果还用scrollspy的话（通常也都会用），也需要用上面的navHeight设置偏移量——offset。</p>
+<pre class="css">
+$body.scrollspy({
+	target: '.bs-sidebar',
+	offset: navHeight
+});
+</pre>
+<br>
+<p>到这都OK，下面都是麻烦事。</p>
+<br>
+<h3 class="blue">★：Link点击后的位置偏移</h3>
+<p>点击侧导航条时，页面上指定的Link会滚动过高，被顶导航条遮住。这个貌似不是Affix的问题，而是顶导航条固定位置的原因。需要用如下方式hack掉——copy自官方网站的css。</p>
+<pre class="css">
+/* Janky fix for preventing navbar from overlapping */
+h1[id] {
+  padding-top: 80px;
+  margin-top: -45px;
+}
+</pre>
+<p>原理是，比如想要35px的间隙，不能直接写35px。需要 
+<ul>
+<li>top padding设置成80px，防止顶导航条遮挡。</li>
+<li>然后再设置top margin为-45px，以达到35px的效果。</li>
+</ul>
+折腾吧？ </p>
+
+<h3 class="blue">★：滚动页面时尺寸会改变</h3>
+<p>还有个问题就是滚动页面，当侧边导航条浮起时会改变尺寸。</p>
+<p>参考了官网的源码，最终也没有找到理想的解决办法。我猜测原因在于官网是两边留余白的方式，这种方式下，Affix的宽度只有在页面尺寸变化到达BS3的screen阈值时才会跟着变化，相对稳定。我自己的则是100%伸展的布局。</p>
+<p>我找到折衷的办法是写死Affix尺寸，让它和浮起时尺寸相同。但这样就导致Affix无法响应页面宽度细微的变化！</p>
+<pre class="css">
+/* Show and Affix the side nav when space allows it */
+@media screen and (min-width: 992px) {
+	...
+	/* Widen the fixed sidebar */
+	.bs-sidebar,.bs-sidebar.affix,.bs-sidebar.affix-bottom {
+		width: 223px;
+	}
+	...
+}
+
+@media screen and (min-width: 1200px) {
+	/* Widen the fixed sidebar again */
+	.bs-sidebar,.bs-sidebar.affix-bottom,.bs-sidebar.affix {
+		width: 299px;
+	}
+}</pre>
+<p>“.bs-sidebar,”是追加的内容，即affix的非浮起状态尺寸。</p>

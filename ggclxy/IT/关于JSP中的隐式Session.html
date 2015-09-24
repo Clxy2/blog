@@ -1,0 +1,125 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: green;
+}
+
+.red {
+	color: red;
+}
+</style>
+<p>
+	在ITeye的问答频道看到个<a href="http://www.iteye.com/problems/95568">问题</a>，比较有趣，摘记如下，以备他时自用。
+</p>
+<p>问题是这样的，下面的JSP代码中</p>
+<pre class="prettyprint"><%
+1.session.invalidate();
+2.out.print("id1:"+session.getId()+"&lt;br/&gt;");
+3.out.print("id2:"+request.getSession(false).getId());
+%>
+</pre>
+<p>第1行无效化session后，第2行仍然能显示session的id，第3行则抛出NullPointerException。</p>
+<p>因为在Java程序中说起session，都是指request.getSession得到的，所以它们应该是指向同一个实例。而上面代码中隐式的session和request.getSession动作却是不同！</p>
+<br>
+<p>正好自己有环境，于是大致试了试。以下是我的尝试JSP代码</p>
+<pre class="prettyprint">- <%=session.getId() %> - <%=request.getSession().getId()%>&lt;br /&gt; //←比较sessionID。
+${user}&lt;br /&gt; //注1
+- <%=session.getAttribute("user") %>&lt;br /&gt;
+- <%=request.getSession(false).getAttribute("user") %>&lt;br /&gt; //←比较三者中的User对象。
+<%
+	session.invalidate();
+	out.print(session + "&lt;br /&gt;");
+	out.print(request.getSession(true) + "&lt;br /&gt;"); //注2
+	out.print(session + "&lt;br /&gt;"); //←打印invalidate后内存地址。
+%>
+- <%=session.getId() %> - <%=request.getSession(false).getId()%>&lt;br /&gt;
+${user}&lt;br /&gt;
+- <%=session.getAttribute("user") %>&lt;br /&gt;
+- <%=request.getSession(false).getAttribute("user") %>&lt;br /&gt;
+</pre>
+<p>注1：user是session里放的变量，每当session被创建时会自动放个new User在里面。</p>
+<p>
+	注2：先尝试request.getSession(<span class="strong">true</span>)，再次尝试request.getSession(<span
+		class="strong red">false</span>)
+</p>
+<p>SessionListener中创建新User的代码</p>
+<pre class="prettyprint">
+	@Override
+	public void sessionCreated(HttpSessionEvent event) {
+		event.getSession().setAttribute(KEY_USER, new User());
+	}
+</pre>
+<br>
+<p>
+	■request.getSession(<span class="strong">true</span>)的结果
+</p>
+<pre class="prettyprint">- 7B380F9A6ED68EB2905F82509A9931FC - 7B380F9A6ED68EB2905F82509A9931FC //←两个sessionID相同
+cn.clxy.ssm.common.data.User@37a744
+- cn.clxy.ssm.common.data.User@37a744
+- cn.clxy.ssm.common.data.User@37a744 //←三个User都相同
+org.apache.catalina.session.StandardSessionFacade@1c69f05
+org.apache.catalina.session.StandardSessionFacade@f20853 //←request里的session被重新创建
+org.apache.catalina.session.StandardSessionFacade@1c69f05 //←但页面中隐式的session没有变化
+- 7B380F9A6ED68EB2905F82509A9931FC - 99A9276B064581ED4A6DFE3CD51C9290 //←两个sessionID已经不同了
+{blank} //←JSTL已经无法找到User实例
+- //←抛出“session已经无效”的异常。说明页面中隐式session的确是无效的
+- cn.clxy.ssm.common.data.User@b7ff //←虽然JSTL找不到User，但request中的session里面是有新User的
+</pre>
+<br>
+<p>
+	■request.getSession(<span class="strong red">false</span>)的结果
+</p>
+<pre class="prettyprint">- 99A9276B064581ED4A6DFE3CD51C9290 - 99A9276B064581ED4A6DFE3CD51C9290
+cn.clxy.ssm.common.data.User@b7ff - cn.clxy.ssm.common.data.User@b7ff -
+cn.clxy.ssm.common.data.User@b7ff org.apache.catalina.session.StandardSessionFacade@f20853 null //←request的session无效后为null
+org.apache.catalina.session.StandardSessionFacade@f20853 - 99A9276B064581ED4A6DFE3CD51C9290 - //←抛出空指针异常
+{blank} //←JSTL已经无法找到User实例
+-  //←抛出“session已经无效”的异常。说明页面中隐式session的确是无效的
+- //←抛出空指针异常
+</pre>
+<hr>
+<p>贴了大段的代码，说结论吧。</p>
+<p><span style="color:blue"><strong>隐式的session和request.getSeesion并不总是一个对象！</strong></span></p>
+<ul>
+	<li>画面初始时，session（即隐式的session）和request.getSession指向相同对象。</li>
+	<li>调用session.invalidate()时，
+		<ul>
+			<li>request的session被设置成null。</li>
+			<li><span class="strong red">session没有变成null，可以取id，但不能再访问attribute。</span></li>
+		</ul>
+	</li>
+	<li>session.invalidate后，JSTL无法定位对象。</li>
+</ul>
+<p>看来还是不要在JSP中调用session.invalidate()，要用也放在最后才好。</p>

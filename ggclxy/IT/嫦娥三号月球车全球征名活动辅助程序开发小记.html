@@ -1,0 +1,77 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	font-size: large;
+}
+
+.red {
+	color: red;
+}
+
+.blue {
+	color: blue;
+}
+</style>
+<p>先说这名字好长，我也觉得长，只是没办法，本体的名字就有13字之多！上简称吧：嫦三月车征名辅，再简之：嫦车辅...唔...如何？</p>
+<p>说正经的，写这个小程序的起因在于自己提交作品时，不知道是否已经有重复的作品，也没地方去检索。而这次活动的官网<a href="http://act3.news.qq.com/10240/">腾讯网</a>和<a href="http://forum.home.news.cn/detail/126673699/">新华网</a>都只提供登录和一览，只能一页一页翻。特别初期每天都上万的新数据，哪里翻得过来，于是自己想搞个检索和统计的辅助程序。这样有一搭没一搭的搞到现在...马上都快到截至日了...我这效率...</p>
+
+<p><span class="strong">最终完成的辅助程序放在GAE上 —— <a href="https://clxystudios.appspot.com/mooncar">嫦三月车辅</a></span>。因为是appspot，请自备云梯。</p>
+
+<p>截至20日的部分统计信息。</p>
+<img style="margin:0 10px 0 0;" src="http://img1.ph.126.net/IO2-6al13dftFymjCkGhIw==/3044151873226007983.png">
+
+<p>其实这篇博文原打算叫“奋斗记”的，实在是有够折腾的。</p>
+<p class="first">先是Google，</p>
+<ul>
+  <li><strong>GAE数据存储的配额太低了！</strong>Datastore Write Operations 0.05 Million Ops，5万次写。我当时收集到的原始数据就13万，根本就不敢想。整理后的数据倒是只有3万，一试之下，毫无悬念的崩！减半，分两次如何？崩！好吧好吧，减到1万，再来过，崩！不高兴再试了！再少也没什么意义。</li>
+  <li><strong>打算转Google Cloud SQL。</strong>必须缴费，作罢。</li>
+  <li><strong>转其他Online DB。</strong>急切间没有合适的，最终作罢。</li>
+</ul>
+<p>于是放弃存储，一切都On The Fly，全部走内存！话说GAE这点不错，内存倒是足够，不崩！且快！哈。除了每次启动后重新上传数据...</p>
+
+<p class="first">再就是数据，真够劲！</p>
+<ul>
+  <li><strong>腾讯网</strong> 最初从列表页面取，可以一次多条，效率会高，毕竟有十几万(至10月17日)的数据，但是此路不通。一是没有作者，日期等信息，二是名字过长时用...代替。最终改成从详细页面取，十几万的数据，又不敢开多线程(不能去添乱啊)，每次都得6，7个小时...</li>
+  <li><strong>新华网</strong> 好些，因为本身就用论坛做的活动页面。加上数据量不大，几万(至10月17日)的数据，每页20楼，半个小时就搞定。但是，新华网的问题是把作者提交的作品和描述等都合并在一处显示，用&lt;br&gt;分割。还自动为每个名称加上“号”字，这处理就比较多余了。因为作者本身就会以“Xx号”命名，于是满眼的”Xxx号号”，我整个人都“号号”了。</li>
+  <li><strong>最后是作品</strong> 真够劲！正常是每人限5件作品，名称和描述分开。无论腾讯还是新华都是有输入框的，名称有名称的输入框，描述有描述的输入框。应该说绝大多数作品都是按规矩来的，但还有那许多的作者“勇于打破条条框框”！
+  <ul>
+  	<li>名称和描述都写在名称里的。</li>
+  	<li>多个名称用标点符号或文字分割写在一次提交里的。这是我处理分隔符的正则表达式。<pre>半角空白|全角空白|,|，|》|《|】|【|、|;|/|／|；|：|:|。|（|）|\"|”|“|<|>|\\(|\\)|\\*|&|’|‘|[|]|\\d{1}\\.|简称|或(者){0,1}(叫){0,1}</pre></li>
+  	<li>上面这些分割符的用途也各不相同，有的是分割多个名字的，有的是标注读音的，有的则是名称描述的...我选择数据量最大的“分割”来处理。</li>
+   	<li>然后是后缀。由于设计上打算去除重复的数据，比如“玉兔”和“玉兔号”或“玉兔号月球车”，这些都算做“玉兔”。但是这些个后缀也太“丰富”了。这是我能分辨的后缀的正则表达式。<pre>(((?i)no)*(—|-|·|\\.)*(\\d|一|二|三|I|壹|X|１)*(号|號)*(月球|探月|探测)*(车|器)*)*$</pre></li>
+  </ul>
+  </li>
+</ul>
+<p><span class="strong">由于能力有限，太多例外，只能做最简处理。毕竟只是辅助程序，不是搞科研，所以一定有好多漏洞。</span>比如如果有作品叫：“简称”，那么多半会被我的程序滤掉了。</p>

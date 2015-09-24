@@ -1,0 +1,129 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	font-size: large;
+}
+
+.red {
+	color: red;
+}
+
+.blue {
+	color: blue;
+}
+</style>
+<p>传统的持久层框架里，我还是比较喜好MyBatis，相对Hibernate和JPA而言，但用得最顺手的是当年的s2dao。不过最近MyBatis也增加了些比较中意的特性，比如纯Interface的Dao模式。</p>
+<p>话说这自动CRUD，如果用MyBatis却是相当麻烦。原因恐怕是MyBatis的特色之一——手动管理SQL。但这始终会是个问题，即便一个中小型系统的Master表也得有上二三十张表吧！每个都手写会是很机械很麻烦的事情。</p>
+<br>
+<p>所谓自动CRUD基本上就是通过反射自动拼SQL，然后传递给MyBatis，大致的解决方案有几个方向：</p>
+<ol>
+	<li>生成器。<a href="https://github.com/mybatis/generator">官方也有提供</a>。但是我比较反对这种模式，既然能自动生成，为什么不自动去做？！如果自动生成的代码是为了可以方便在上面修改的话，那更不安全。因为一旦发生变更，再次自动生成后，很容易把过去的修改覆盖掉。而且多了自动生成这个环节，维护时出错的几率也会增多。于我，可是有过血淋淋的历史教训啊！
+	</li>
+	<li>MyBatis的拦截器。这种模式的解决方案较多，特别是自动分页，因为其他地方拿不到查询的SQL文，所以恐怕只能在这里处理。但是CRUD用这种方式就有些过于隐晦了，似乎不妥。</li>
+	<li>共通Dao。基本的CRUD，我倾向于用这种模式处理。</li>
+</ol>
+<br>
+<p>第一种不去说它。第二种的实现类似于下面。</p>
+<pre name="code" class="java">
+// ==== 拦截器。
+@Intercepts({
+		@Signature(
+				type = Executor.class,
+				method = "update",
+				args = { MappedStatement.class, Object.class }) })
+public class MybatisInterceptor implements Interceptor {
+
+	@Override
+	public Object intercept(Invocation invocation) throws Throwable {
+		// 处理基本CRUD。
+		// 如果是基本的CRUD，且没有SQL文指定，那么用反射自动拼SQL文。
+	}
+	
+	...
+
+}
+
+// ==== Dao示例。
+public interface XxxDao {
+	// 即不在annotation也不在XML里指定SQL。
+	void insert(Xxx xxx);
+}
+</pre>
+<p>即在调用XxxDao#insert方法时，在上面的拦截器中，因为没有找到SQL文，于是会自动处理。</p>
+<p>
+	这种模式我没能完成编码，因为觉得实现方式过于隐晦。那个insert看上去像个没有完成的作品，让人摸不到头脑。有可能(就一定会)让维护的人误会。写到一半的代码在<a
+		href="https://github.com/clxy/SSM/blob/master/src/main/java/cn/clxy/ssm/common/dao/MybatisInterceptor.java">这里</a>。
+</p>
+<br>
+<p>
+	第三种方式，我走了弯路。最初打算写个Interface定义所有要处理的自动CRUD，然后再写个Class实现之。<a
+		href="http://clxy.iteye.com/blog/1887678">在注册Dao上还好顿折腾</a>。后来偶然中发现了SQL
+	Provider这种模式，可以在纯Interface中搞定！
+</p>
+<pre name="code" class="java">
+// Dao
+public interface UtilDao {
+
+	@InsertProvider(type = SqlProvider.class, method = "insert")
+	public int insert(Object object);
+	
+	...
+}
+
+// SqlProvider
+public class SqlProvider {
+
+	public String insert(Object object) {
+		// 返回通过反射拼装的SQL。
+	}
+}
+</pre>
+<p>
+	MyBatis还区分了各种SQL分别用InserProvider，SelectProvider等等，没有这个必要吧。具体代码参考<a
+		href="https://github.com/clxy/OpenShiftHome/blob/master/src/main/java/cn/clxy/studio/common/dao/UtilDao.java">这里</a>。
+</p>
+<br>
+<p>最后是分页，整理自网上学来的办法。大致流程如下：</p>
+<ol>
+	<li>拦截器里拦截查询语句。判断是否需要分页，如果不需要则不处理。</li>
+	<li>如果需要，则包装SQL语句，先查询总件数。如果件数为零则返回空。</li>
+	<li>如果件数不为零，则设置分页条件，改写查询SQL文。最后交给MyBatis查询。</li>
+</ol>
+<p>
+	同样的原因，由于MyBatis对自动的态度，导致上述的实现极其丑陋！以我的洁癖程度来看，几乎出线！具体代码参考<a
+		href="https://github.com/clxy/SSM/blob/master/src/main/java/cn/clxy/ssm/common/dao/impl/PaginationHandler.java">这里</a>。所以才反对CRUD在拦截器这里做，实在是...
+</p>
+<br>
+<p>总体上的感觉，MyBatis还是有些毛糙。</p>

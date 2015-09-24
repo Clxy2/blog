@@ -1,0 +1,269 @@
+<style type="text/css">
+p {
+	text-indent: 10px;
+}
+
+p.first:first-letter {
+	font-weight: bold;
+	font-size: x-large;
+	color: red;
+}
+
+hr {
+	height: 1px;
+	border: none;
+	border-top: 1px dashed green;
+}
+
+blockquote {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+	white-space: pre;
+}
+
+pre {
+	border: 1px solid #dedbde;
+	border-radius: 3px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.strong {
+	font-style: inherit;
+	font-weight: bold;
+	color: red;
+}
+</style>
+<p>这篇一早写好，原打算等竞赛结束再贴。可昨天发现网上已到处都有讨论及解答，就不再等了。</p>
+<p>
+	前些日子玩的一道题，虽然解题失败，但还是觉得值得记上一笔。题是这样的
+</p>
+
+<pre>给定一个字符串，仅由a,b,c 3种小写字母组成。当出现连续两个不同的字母时，你可以用另外一个字母替换它，如
+ - 有ab或ba连续出现，你把它们替换为字母c；
+ - 有ac或ca连续出现时，你可以把它们替换为字母b；
+ - 有bc或cb 连续出现时，你可以把它们替换为字母a。
+你可以不断反复按照这个规则进行替换，你的目标是使得最终结果所得到的字符串尽可能短，求最终结果的最短长度。 
+
+输入：字符串。长度不超过200，仅由abc三种小写字母组成。 
+输出：按照上述规则不断消除替换，所得到的字符串最短的长度。 
+
+例如：
+	输入cab，输出2。因为我们可以把它变为bb或者变为cc。 
+	输入bcab，输出1。尽管我们可以把它变为aab -> ac -> b，也可以把它变为bbb，但因为前者长度更短，所以输出1。</pre>
+
+<p>我对纯粹的数学公式推导还是很怕的。年纪越大，越偏文了？但这道题比起公式推导，推理的味道更浓些。</p>
+
+<p>失败的原因是超时。似乎应该先读题，分析及做好准备后，再去答题。我直接点了进去，在倒计时的恫吓下，两个小时里啥都没干成...</p>
+
+<p>挑战失败后，反倒静下心来。最先找到的规律就是重复的字母可以化简，比如三个a和一个a是等价的，4个b和2个b也是等价的。于是直接开写实现这个化简逻辑的代码。M大人也被我拖下水，途中参战。不愧是M大人，思路很直接：“每次消除时都能保证最短即可！”先找感觉再找理论支撑是M大人的风格。结果证明这个思路也是对的！一发命中也是M大人的风格！</p>
+
+<p>我这时却陷入了困境——即便整理好重复的字符，依然a啊b啊c的团团混杂，看不出个所以然。在我打算放弃，M大人的一句话点亮了我的解题道路——虽然她自己不大在意——“c其实等价于ab！”。是的，如果c等价于ab，那么把c用ab(或ba)替换掉后，字符串就只剩下ab了，就又可以整理重复的字符了！哇哈哈！到这里才发现，原来我的思路就只是“整理”！”</p>
+
+<p>这回学乖了，不写代码了，先观察分析——总是忘记这条多年来学到宝贵经验。我发现如果相同的奇数个字符无论多少个都会产生同样结果，偶数也同样。这样可以进一步化简，所有重复的奇数字符都算作一个，所有偶数的都算作两个。字符串最终化简成a<small>x</small>b<small>x</small>a<small>x</small>...&nbsp;x可能是1或2。到这里规律很容易找到：</p>
+<blockquote>c替换成ab；统计ab的个数；当a和b的个数都是偶数时，结果是两个；否则是一个。</blockquote>
+
+<p>M大人最终的逻辑则复杂些：</p>
+<blockquote>遍历字符串；尝试消除字符；不能消除则继续；如能消除，用再前一位和再后一位字符评价是否能保证最短(=即不同)，能则消，否则继续；一旦有消除发生，重新遍历消除后的新字符串；遍历结束时检查是否存在可以消除但却没通过评价的情况，如果有则消除，重新遍历。</blockquote>
+
+<p>上面的逻辑再加上，如果该字符串全部字符相同——比如都是a——这样的特殊情况就全活了！</p>
+<p>这里的论证不是那么严谨，但是结果我觉得是相当的...理想。</p>
+<p>代码如下：</p>
+<pre class="prettyprint">
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+public class EraseChar {
+
+	private static Character[] chars = { 'a', 'b', 'c' };
+
+	public static void main(String args[]) {
+
+		Set&lt;String&gt; strings = new HashSet&lt;&gt;();
+
+		// start === 测试数据。
+		for (int i = 0; i &lt; 100000; i++) {
+			fillRandom(strings);
+		}
+		strings.add("a");
+		strings.add("b");
+		strings.add("c");
+		strings.add("ab");
+		strings.add("abc");
+		strings.add("aa");
+		strings.add("aaa");
+		strings.add("aaaa");
+		strings.add("cacccc");
+		// end === 测试数据。
+
+		for (String s : strings) {
+			int min1 = gg(s);
+			int min2 = mm(s);
+			System.out.println("min1=" + min1 + ", min2=" + min2 + " {" + s + "}");
+			if (min1 != min2) {
+				throw new RuntimeException("Noooooooo!");
+			}
+		}
+	}
+
+	public static int gg(String s) {
+
+		char[] chars = s.toCharArray();
+
+		int length = chars.length;
+		if (isAllSame(chars)) {
+			return length;
+		}
+
+		int countA = 0;
+		int countB = 0;
+
+		for (char c : chars) {
+			switch (c) {
+			case 'c':
+				countA++;
+				countB++;
+				break;
+			case 'a':
+				countA++;
+				break;
+			case 'b':
+				countB++;
+				break;
+			}
+		}
+
+		if (countA % 2 == 0 && countB % 2 == 0) {
+			return 2;
+		}
+
+		return 1;
+	}
+
+	public static int mm(String s) {
+
+		char[] chars = s.toCharArray();
+
+		int length = chars.length;
+		if (isAllSame(chars)) {
+			return length;
+		}
+
+		LinkedList&lt;Character&gt; list = new LinkedList&lt;&gt;();
+		for (char c : chars) {
+			list.add(c);
+		}
+
+		return getMimi(list);
+	}
+
+	public static Integer getMimi(List&lt;Character&gt; list) {
+
+		int size = list.size();
+		if (size == 1) {
+			return 1;
+		}
+
+		if (size == 2) {
+			return list.get(0).equals(list.get(1)) ? 2 : 1;
+		}
+
+		Integer position = null;
+		for (int i = 0, l = list.size() - 1; i &lt; l; i++) {
+
+			Character first = list.get(i);
+			Character second = getElement(list, i + 1);
+			Character test = test(first, second);
+			if (test == null) {
+				continue;
+			}
+
+			Set&lt;Character&gt; comps = new HashSet&lt;&gt;();
+			Character prev = getElement(list, i - 1);
+			if (prev != null) {
+				comps.add(prev);
+			}
+			Character next = getElement(list, i + 2);
+			if (next != null) {
+				comps.add(next);
+			}
+			comps.remove(test);
+			if (comps.isEmpty()) {
+				position = (position == null) ? i : position;
+				continue;
+			}
+
+			replace(list, i, test);
+			return getMimi(list);
+		}
+
+		if (position == null) {
+			return list.size();
+		}
+
+		Character first = list.get(position);
+		Character second = getElement(list, position + 1);
+		Character test = test(first, second);
+		replace(list, position, test);
+		return getMimi(list);
+	}
+
+	private static boolean isAllSame(char[] chars) {
+
+		Character temp = null;
+		for (char c : chars) {
+			if (temp == null) {
+				temp = c;
+				continue;
+			}
+
+			if (!temp.equals(c)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static Character test(char c1, char c2) {
+		return (c1 == c2) ? null : minus(c1, c2);
+	}
+
+	private static void replace(List&lt;Character&gt; list, int i, char c) {
+		list.remove(i);
+		list.remove(i);
+		list.add(c);
+	}
+
+	private static Character getElement(List&lt;Character&gt; list, int i) {
+		return (i &gt;= list.size() || i &lt; 0) ? null : list.get(i);
+	}
+
+	private static char minus(char c1, char c2) {
+		for (char c : chars) {
+			if (c != c1 && c != c2) {
+				return c;
+			}
+		}
+		throw new RuntimeException("wrong char！");
+	}
+
+	private static void fillRandom(Set&lt;String&gt; strings) {
+
+		Random r = new Random();
+		int size = r.nextInt(200);
+		StringBuilder sb = new StringBuilder(size);
+		for (int i = 0; i &lt; size; i++) {
+			sb.append(chars[r.nextInt(3)]);
+		}
+		String s = sb.toString();
+		if (strings.contains(s)) {
+			fillRandom(strings);
+		}
+		strings.add(s);
+	}
+}</pre>
